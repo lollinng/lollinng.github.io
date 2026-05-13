@@ -1,0 +1,56 @@
+:root {
+    --fg: #1a1a1a;
+    --muted: #666;
+    --bg: #fafafa;
+    --link: #0a66c2;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+}
+
+main {
+    max-width: 560px;
+    margin: 12vh auto;
+    padding: 0 24px;
+}
+
+h1 {
+    font-size: 1.6rem;
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+}
+
+.tag {
+    color: var(--muted);
+    margin: 0 0 2rem;
+}
+
+.note {
+    margin: 0 0 2rem;
+}
+
+.links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 1.25rem;
+}
+
+.links a {
+    color: var(--link);
+    text-decoration: none;
+}
+
+.links a:hover {
+    text-decoration: underline;
+}
