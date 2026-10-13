@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>How Thesis Workbench works</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap bar-in">
+    <div class="brand"><span class="hl">Thesis</span> Workbench</div>
+    <nav class="tabs" aria-label="Sections">
+      <a href="index.html#questions">Questions</a>
+      <a href="index.html#predictions">Predictions</a>
+      <a href="process.html" aria-current="page">How it works</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap proc">
+
+  <header class="proc-hero">
+    <p class="eyebrow">How it works</p>
+    <h1>From a question to a thesis you can <span class="hl">defend</span></h1>
+    <p class="lede">The easiest mistake in forming an opinion is to go straight from hearing an influential voice to adopting their conclusion. The workbench puts five stages and one habit between the two.</p>
+    <a class="btn primary" href="index.html">Open the workbench</a>
+  </header>
+
+  <section class="psec" id="stages">
+    <h2>Five stages, one question each</h2>
+    <p>You move left to right. Each stage has a short checklist that tells you when you have done enough to move on, so you never have to guess whether you are finished.</p>
+    <figure class="fig">
+      <p class="flow-start"><span class="pill">Before you start</span>Write your gut take and how sure you are. You will compare it with where you end up.</p>
+      <ol class="flow" id="flow"></ol>
+      <div class="loopback" aria-hidden="true"></div>
+      <p class="loop-label">A review date, a ticked signpost, or a resolved prediction sends you back to stage 1 with a better starting view.</p>
+      <figcaption>Each stage answers one question, guards against one trap, and hands a concrete result to the next.</figcaption>
+    </figure>
+  </section>
+
+  <section class="psec" id="session">
+    <h2>One habit: three lines per session</h2>
+    <p>Every time you read, watch, or test something, leave with one observation, one explanation, and one prediction. The observation keeps you honest about what you saw. The explanation forces you to name a mechanism. The prediction makes the explanation checkable.</p>
+    <div class="duo">
+      <figure class="fig">
+        <div id="ring" class="chart"></div>
+        <ul class="legend">
+          <li><i class="sw on"></i>Written during the session</li>
+          <li><i class="sw"></i>Happens later, when the date arrives</li>
+        </ul>
+        <figcaption>The first three steps take a few minutes. The last three are what turn a pile of notes into a track record.</figcaption>
+      </figure>
+      <div class="sess">
+        <div class="sess-h mono"><span>A worked session</span></div>
+        <dl class="oep">
+          <div><dt>Observation</dt><dd>Coding agents can complete some well-specified programming tasks but struggle with certain complex, long-running workflows.</dd></div>
+          <div><dt>Explanation</dt><dd>Success depends on context, feedback quality, tooling, and the ability to detect and recover from mistakes.</dd></div>
+          <div><dt>Prediction</dt><dd>Agents will become reliable at a broader range of development tasks as their verification and planning systems improve, though full project autonomy may remain uneven. <span class="pill">70% · check in 9 months</span></dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="psec" id="confidence">
+    <h2>Confidence is a number, with a word attached</h2>
+    <p>"Likely" means 55% to one reader and 90% to another, and a word cannot be scored afterwards. So you state a number, and the workbench attaches the word that the US intelligence community uses for that range.</p>
+    <figure class="fig">
+      <div class="scale" id="scale" role="img" aria-label="A bar from 0 to 100 percent divided into seven likelihood bands"></div>
+      <div class="scale-ticks mono" id="ticks" aria-hidden="true"></div>
+      <ul class="bands" id="bands"></ul>
+      <figcaption>The bands are uneven on purpose. "Likely" covers 25 points, "roughly even odds" only 10. Keep the exact number: in a study of 888,328 forecasts, rounding numbers into two or three verbal buckets made them less accurate.</figcaption>
+    </figure>
+  </section>
+
+  <section class="psec" id="score">
+    <h2>Keeping score</h2>
+    <p>Every prediction gets a probability and a date. When the date arrives you mark it as happened or not, and the Predictions page compares how often things happened with how likely you said they were.</p>
+    <div class="duo">
+      <figure class="fig">
+        <div id="calib" class="chart"></div>
+        <figcaption>An illustration, not your data. Dots on the line mean stated odds matched reality. Here, predictions made at 90% came true 71% of the time, so this forecaster is overconfident at the high end. A dot above the line would mean the opposite.</figcaption>
+      </figure>
+      <div class="prose">
+        <p><b>The Brier score</b> is the average of (what you said minus what happened), squared.</p>
+        <table class="tbl">
+          <thead><tr><th>You said</th><th>It</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>70%</td><td>happened</td><td>(0.7 − 1)² = 0.09</td></tr>
+            <tr><td>70%</td><td>did not happen</td><td>(0.7 − 0)² = 0.49</td></tr>
+            <tr><td>50%</td><td>either</td><td>0.25</td></tr>
+          </tbody>
+        </table>
+        <p>Zero is perfect. Always saying 50% scores 0.25, so anything below that means your numbers carry information.</p>
+        <p>Read the chart as a rough sketch until you have a few dozen resolved predictions. With ten predictions in a group, luck alone can move the hit rate by nearly 30 points.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="psec" id="sources">
+    <h2>Where the methods come from</h2>
+    <p>The stages borrow from people whose job is to commit to a view and be held to it. Every prompt in the workbench traces back to one of their habits.</p>
+    <figure class="fig">
+      <div class="scroll"><table class="trad" id="trad"></table></div>
+      <figcaption>Each cell names the habit borrowed from that tradition for that stage. Details and sources follow.</figcaption>
+    </figure>
+    <div id="methods" class="methods"></div>
+  </section>
+
+  <section class="psec" id="evidence">
+    <h2>What the evidence says</h2>
+    <p>Structured thinking tools are easier to praise than to prove. These four findings shaped how much structure the workbench asks of you.</p>
+    <ul class="mlist" id="evidence-list"></ul>
+  </section>
+
+  <section class="psec" id="yours">
+    <h2>Making it yours</h2>
+    <p>This version is deliberately generic. Everything a niche version would change sits in one file, <code>js/framework.js</code>:</p>
+    <ul class="plain">
+      <li>The stages and the question each one answers</li>
+      <li>The prompts and their example text</li>
+      <li>The "Ready to move on?" checks</li>
+      <li>The kinds of source and the reliability scale</li>
+      <li>The likelihood words</li>
+      <li>The method notes on this page</li>
+    </ul>
+    <p>A version for judging AI research claims, for instance, might swap the source kinds for papers, benchmarks, demos and vendor announcements, and add a reproduction checklist to the Experiment stage.</p>
+    <div><a class="btn primary" href="index.html">Open the workbench</a></div>
+  </section>
+
+</main>
+
+<div id="tip" class="tip" role="tooltip" hidden></div>
+
+<script src="js/framework.js"></script>
+<script src="js/process.js"></script>
+</body>
+</html>
