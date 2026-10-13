@@ -4,18 +4,117 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prathamesh Jadhav</title>
+    <meta name="description" content="Prathamesh Jadhav: AI engineer and researcher. Agent backends, LLM and RAG platforms, GPU and Bayesian inference research. Pune, India.">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <main>
-        <h1>Prathamesh Jadhav</h1>
-        <p class="tag">Backend &amp; AI-infra engineer. Mumbai.</p>
-        <p class="note">Site under construction. Writing soon.</p>
-        <ul class="links">
-            <li><a href="/practice/">practice room</a></li>
-            <li><a href="https://github.com/lollinng">github</a></li>
-            <li><a href="mailto:pratameshjadhav@gmail.com">email</a></li>
-        </ul>
+        <header>
+            <h1>Prathamesh Jadhav</h1>
+            <p class="tag">AI engineer and researcher. Backend, agent systems and GPU inference. Pune, India.</p>
+            <ul class="links">
+                <li><a href="https://github.com/lollinng">github</a></li>
+                <li><a href="https://www.linkedin.com/in/prathameshvj">linkedin</a></li>
+                <li><a href="mailto:pratameshjadhav@gmail.com">email</a></li>
+                <li><a href="/practice/">practice room</a></li>
+            </ul>
+        </header>
+
+        <section>
+            <h2>About</h2>
+            <p>I build AI products end to end: the agent orchestration and LLM backends, the infrastructure under them, and the GPU-heavy scientific pipelines behind them. Three years of shipping, from Oracle's backend team to an AI startup, plus research that was published and awarded.</p>
+        </section>
+
+        <section>
+            <h2>Projects</h2>
+
+            <article class="project">
+                <h3><a href="https://roomio-demo.pages.dev">Roomio</a> <span class="meta">2026 · solo</span></h3>
+                <p>A browser-based 3D home designer that turns floor plans into furnished homes you can walk through. I designed and built all of it.</p>
+                <ul>
+                    <li>114 parametric furniture pieces with a custom collision and snapping solver; first-person walkthrough, path-traced stills and MP4 flythrough export.</li>
+                    <li>Plan-to-3D pipeline: coding agents build each multi-storey home from a CAD plan in stages, with door and doorway rules enforced by tests on every home.</li>
+                    <li>An LLM floor-plan reader (proof of concept) accepts a wall opening only when the model and a computer-vision scan agree; everything else goes to a human review queue.</li>
+                    <li>Cut the tour's load time from about 20 s to about 8 s: shaders compiled once, procedural textures on Web Workers, the home shown before its textures finish.</li>
+                </ul>
+                <p class="stack">React · TypeScript · Three.js · React Three Fiber · Express · PostgreSQL · Cloudflare Pages</p>
+                <p class="project-links"><a href="https://roomio-demo.pages.dev">live demo with four furnished homes</a></p>
+            </article>
+
+            <article class="project">
+                <h3><a href="https://cook-quest-six.vercel.app">CookQuest</a> <span class="meta">2026</span></h3>
+                <p>Strava plus Duolingo for cooking: five skill trees with cook-to-unlock recipes, XP, streaks and badges, a social feed and a global leaderboard.</p>
+                <ul>
+                    <li>Computer-vision photo checks on colour, texture and plating gate progression, with an admin moderation and appeals dashboard.</li>
+                    <li>PWA with JWT auth and an email-verified waitlist.</li>
+                </ul>
+                <p class="stack">Next.js 15 · Express · PostgreSQL · GCP Cloud Run</p>
+                <p class="project-links"><a href="https://cook-quest-six.vercel.app">live</a> · <a href="https://github.com/lollinng/CookQuest">code</a></p>
+            </article>
+        </section>
+
+        <section>
+            <h2>Experience</h2>
+
+            <article class="job">
+                <h3>Edra Labs <span class="meta">AI Engineer · Jul 2024 to Sep 2026</span></h3>
+                <p class="team">Work Companion, an agentic LLM product</p>
+                <ul>
+                    <li>Built the backend and agent orchestration for a product used by 1K to 10K people daily. Each turn runs episode routing, context assembly, an LLM call and token streaming over Socket.IO in under 300 ms (FastAPI, PostgreSQL, Redis).</li>
+                    <li>Designed its episode-based multi-agent system: each conversation episode gets its own agents and the context they need (user state, memory, prior turns), assembled on every turn.</li>
+                </ul>
+                <p class="team">Content Platform, LLM data extraction</p>
+                <ul>
+                    <li>Cut new-category launch time from 6 months to 2 months and manual effort by 95% with an LLM platform that turns webpages, PDFs, images and video into structured data (RAG, semantic chunking, vector embeddings). Rolled out across 8 content categories.</li>
+                    <li>Led a 2-engineer team re-architecting the frontend layer into a modular Express backend: release cycles dropped 80%, and bulk async throughput rose 95% with AWS DMS replication and multi-queue Celery.</li>
+                    <li>Set up an isolated pre-prod environment with automated sync and one-click schema-aware deploys, which cut production issues by 70%.</li>
+                </ul>
+                <p class="team">Mineral Exploration, geophysical inversion on GPUs</p>
+                <ul>
+                    <li>Owned the GPU and inference stack of a production inverse-modelling platform that identifies drill locations: CUDA/C++ forward models, Triton and CuPy kernels, Prefect workflows, H200 and B200 GPUs on Modal.</li>
+                    <li>Cut per-drillhole latency 3.9x (104 s to 27 s) on the same four A100s by sharding the reduction across GPUs over NCCL and fusing kernels; Bayesian ranking later reached 20 s per drillhole (43x faster).</li>
+                    <li>Built a diffusion-model approach to subsurface inversion: a UNet prior on synthetic 3D geology, conditioned on gravity and magnetic surveys with Diffusion Posterior Sampling to return several plausible models.</li>
+                    <li>Built the production inversion and falsification stack: MPPCA and MDS across 100K+ Monte-Carlo realisations with a fused CUDA falsification module at about 1 s per iteration.</li>
+                    <li>Led the satellite-spectral pipeline that narrowed exploration from continental scale to 10 km zones at 90% industry-grade accuracy, with weekly consultancy from IIT Bombay.</li>
+                </ul>
+            </article>
+
+            <article class="job">
+                <h3>Oracle <span class="meta">Backend Developer · Jul 2023 to Jul 2024</span></h3>
+                <ul>
+                    <li>Shipped 20+ client-facing features with sub-week turnaround on PL/SQL, Java and ODT-based UIs.</li>
+                    <li>Sped up customer-onboarding ETL with internal APIs for batched uploads of thousands of records per request.</li>
+                </ul>
+            </article>
+        </section>
+
+        <section>
+            <h2>Research</h2>
+            <ul>
+                <li>Best Research Paper Award, IEEE Pune Section Conference 2023: "Smart Wearable for Blind People".</li>
+                <li>Research publication, ICERECT 2022, on applied AI systems.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Skills</h2>
+            <dl class="skills">
+                <dt>Languages</dt><dd>Python, TypeScript, JavaScript, C++, CUDA</dd>
+                <dt>Backend</dt><dd>FastAPI, Node.js, Express, PostgreSQL, Redis, Celery, Socket.IO, Typesense, Prisma, Prefect</dd>
+                <dt>AI and LLM</dt><dd>multi-agent orchestration, context engineering, RAG, embeddings, streaming inference, PyTorch, diffusion models</dd>
+                <dt>GPU and infra</dt><dd>Triton, CuPy, NCCL, multi-GPU (A100, H100, H200), AWS, GCP Cloud Run, Modal, Docker</dd>
+                <dt>Frontend and 3D</dt><dd>Next.js, React, Three.js, React Three Fiber, WebGL</dd>
+            </dl>
+        </section>
+
+        <section>
+            <h2>Education</h2>
+            <p>B.E. Computer Engineering, International Institute of Information Technology, Pune. 2019 to 2023.</p>
+        </section>
+
+        <footer>
+            <p>Open to backend and AI engineering roles, remote or Pune. <a href="mailto:pratameshjadhav@gmail.com">pratameshjadhav@gmail.com</a></p>
+        </footer>
     </main>
 </body>
 </html>
