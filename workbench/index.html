@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Thesis Workbench</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap bar-in">
+    <div class="brand"><span class="hl">Thesis</span> Workbench</div>
+    <nav class="tabs" aria-label="Sections">
+      <button type="button" id="tab-home" data-act="go" data-to="home">Questions</button>
+      <button type="button" id="tab-predictions" data-act="go" data-to="predictions">Predictions</button>
+      <a href="process.html">How it works</a>
+    </nav>
+    <span class="save" id="save" role="status"></span>
+  </div>
+</header>
+
+<main class="wrap" id="app"></main>
+
+<dialog id="dlg" aria-label="Form"></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<div id="tip" class="tip" role="tooltip" hidden></div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+
+<script src="js/framework.js"></script>
+<script src="js/example.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
