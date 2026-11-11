@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Full-fairing build plan for a Rocker Red Royal Enfield Continental GT 650: livery mockups, reference photos and parts prices.">
+<title>Rocker Red Fairing Build</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: a workshop build sheet. Title block, a livery picker on the photo-real mockups,
+   then photo boards grouped by the bike they come from, then the parts bill. */
+:root{
+  --ground:#eceef0; --panel:#f8f9fa; --stage:#dcdfe3; --ink:#15171a; --muted:#5b6169; --line:#c9cdd3;
+  --red:#b3141f; --red-ink:#9a0f19; --on-red:#fff6ee; --sel:#15171a;
+  --display:"Barlow Condensed","Arial Narrow",Impact,sans-serif;
+  --body:"Barlow","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --ground:#16181b; --panel:#1e2125; --stage:#2a2d32; --ink:#eef0f2; --muted:#a3a9b1; --line:#383c42;
+  --red:#d9323d; --red-ink:#ff6b73; --on-red:#fff6ee; --sel:#eef0f2; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --ground:#16181b; --panel:#1e2125; --stage:#2a2d32; --ink:#eef0f2; --muted:#a3a9b1; --line:#383c42;
+  --red:#d9323d; --red-ink:#ff6b73; --on-red:#fff6ee; --sel:#eef0f2; color-scheme:dark }
+
+*,*::before,*::after{box-sizing:border-box}
+img{max-width:100%}
+[hidden]{display:none!important}
+body{margin:0;background:var(--ground);color:var(--ink);font:400 16px/1.55 var(--body)}
+.wrap{max-width:1180px;margin:0 auto;padding-block:28px 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.02}
+h1{font-size:clamp(2.6rem,7vw,4.6rem);font-weight:700;text-transform:uppercase;letter-spacing:.005em}
+h1 em{font-style:normal;color:var(--red-ink)}
+h2{font-size:clamp(1.7rem,3.6vw,2.4rem);font-weight:600;text-transform:uppercase}
+h3{font-size:1.25rem;font-weight:600;letter-spacing:.01em}
+p{margin:0;max-width:68ch}
+a{color:var(--red-ink)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--red-ink);outline-offset:2px}
+.eyebrow{font:600 .8rem/1 var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+section{display:flex;flex-direction:column;gap:18px}
+.sec-head{display:flex;flex-direction:column;gap:8px}
+
+/* title block */
+.top{display:flex;flex-direction:column;gap:14px;border-bottom:3px solid var(--ink);padding-bottom:24px}
+.spec{display:flex;flex-wrap:wrap;gap:10px 28px;font-variant-numeric:tabular-nums}
+.spec div{display:flex;flex-direction:column;gap:2px}
+.spec b{font:600 1.5rem/1 var(--display)}
+.spec span{font-size:.8rem;color:var(--muted)}
+
+/* livery picker */
+.picker{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+.viewer{display:flex;flex-direction:column;gap:12px;min-width:0}
+.viewer .img{border-radius:4px;overflow:hidden;background:#d8dadd}
+.viewer img{display:block;width:100%;height:auto;aspect-ratio:1179/781}
+.viewer .info{display:flex;flex-direction:column;gap:6px}
+.viewer .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.viewer h3{font-size:1.7rem}
+.paint{font-size:.85rem;color:var(--muted)}
+.list{display:flex;flex-direction:column;gap:4px;max-height:640px;overflow-y:auto;padding-right:4px}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;
+  align-items:center;padding:8px 10px;border-radius:4px;border:1px solid transparent}
+.opt:hover{background:var(--panel)}
+.opt[aria-pressed="true"]{background:var(--panel);border-color:var(--sel)}
+.opt:focus-visible{outline:2px solid var(--red-ink);outline-offset:1px}
+.chips{display:flex;border-radius:3px;overflow:hidden;box-shadow:0 0 0 1px var(--line)}
+.chips i{display:block;width:14px;height:28px}
+.opt b{font:600 1.05rem/1.1 var(--display);display:block}
+.opt small{color:var(--muted);font-size:.78rem}
+.tag{align-self:flex-start;font:600 .72rem/1 var(--display);letter-spacing:.1em;text-transform:uppercase;
+  padding:4px 7px;border:1px solid var(--line);border-radius:2px;color:var(--muted)}
+.tag.pick{background:var(--red);border-color:var(--red);color:var(--on-red)}
+.thumbs{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+.thumb{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
+.thumb img{display:block;width:100%;aspect-ratio:1179/781;object-fit:cover;border-radius:3px;border:2px solid transparent}
+.thumb[aria-pressed="true"] img{border-color:var(--sel)}
+.thumb span{font-size:.8rem;line-height:1.25}
+.thumb:focus-visible img{outline:2px solid var(--red-ink);outline-offset:1px}
+
+/* photo boards */
+.board{display:flex;flex-direction:column;gap:12px}
+.board .lead{display:flex;flex-direction:column;gap:4px}
+.photos{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+figure{margin:0;display:flex;flex-direction:column;gap:6px;min-width:0}
+figure button{all:unset;cursor:zoom-in;display:block;border-radius:4px;overflow:hidden;background:var(--stage)}
+figure img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
+figcaption{font-size:.82rem;line-height:1.35}
+figcaption small{display:block;color:var(--muted);font-size:.72rem;overflow-wrap:anywhere}
+figcaption small a{color:inherit}
+
+/* bill */
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:620px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;font-size:.93rem}
+th{font:600 .78rem/1.2 var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+td.n{white-space:nowrap;font-weight:600}
+tr.total td{border-top:3px solid var(--ink);border-bottom:0;font:600 1.25rem/1.2 var(--display)}
+.est{font-size:.72rem;color:var(--muted);font-weight:400}
+.two{display:grid;gap:24px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.two > div{display:flex;flex-direction:column;gap:10px;min-width:0}
+ol,ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px;max-width:68ch}
+.links{list-style:none;padding:0;font-size:.9rem}
+
+dialog{border:0;padding:0;background:var(--panel);color:var(--ink);border-radius:6px;max-width:min(1000px,94vw)}
+dialog::backdrop{background:rgba(0,0,0,.72)}
+dialog img{display:block;max-width:100%;max-height:78vh;margin:0 auto}
+dialog .cap{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:10px 14px;font-size:.88rem}
+dialog button{font:600 .85rem var(--display);letter-spacing:.08em;text-transform:uppercase;background:var(--ink);
+  color:var(--ground);border:0;border-radius:3px;padding:8px 12px;cursor:pointer}
+@media (max-width:860px){
+  .picker{grid-template-columns:1fr}
+  .list{max-height:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+}
+@media (prefers-reduced-motion:no-preference){ .viewer img{transition:opacity .15s} }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <span class="eyebrow">Continental GT 650 · Rocker Red · full fairing</span>
+  <h1>Rocker Red <em>Fairing</em> Build</h1>
+  <p>Your render repainted in 12 liveries, 48 reference photos of bikes that already wear this look, and the parts bill with prices from current listings. Mirrors and exhaust stay stock.</p>
+  <div class="spec">
+    <div><b>₹58k–72k</b><span>bolt-on kit, tank left in factory red</span></div>
+    <div><b>₹1.15–1.2 lakh</b><span>with a full candy respray</span></div>
+    <div><b>13 + 48</b><span>mockups + photos</span></div>
+  </div>
+</header>
+
+<section>
+  <div class="sec-head">
+    <span class="eyebrow">Liveries</span>
+    <h2>Pick a paint scheme</h2>
+    <p>Each version is your render with the panels repainted, keeping its reflections and shading, so you see the colours on the real shape. The tank stays Rocker Red in all but one, because painting only the new fibreglass is what keeps the cost down.</p>
+  </div>
+  <div class="picker">
+    <div class="viewer">
+      <div class="img"><img id="main" src="mock/silver.jpg" alt="GT 650 with a red fairing and silver side panel"></div>
+      <div class="info">
+        <div class="row"><h3 id="mname">Red over Silver</h3><span class="tag" id="mtag">Superveloce</span></div>
+        <p id="mnote"></p>
+        <span class="paint" id="mpaint"></span>
+      </div>
+    </div>
+    <div class="list" id="list" role="group" aria-label="Liveries"></div>
+  </div>
+  <div class="thumbs" id="thumbs" role="group" aria-label="All liveries side by side"></div>
+  <p class="muted">The mockups keep the render's fairing shape. The MK Designs kit has smaller, more open lower panels, so a real build will show more engine. For the half-fairing layout, see the GT 750 show bike and Ducati Paul Smart photos below.</p>
+</section>
+
+<section>
+  <div class="sec-head">
+    <span class="eyebrow">Reference photos</span>
+    <h2>Bikes that already wear it</h2>
+    <p>Tap a photo to enlarge it. Every photo is freely licensed from Wikimedia Commons, credited underneath. The kit makers' own product photos are copyrighted, so those are linked in the parts bill instead of copied here.</p>
+  </div>
+  <div id="boards" style="display:flex;flex-direction:column;gap:36px"></div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <span class="eyebrow">Parts bill</span>
+    <h2>What it costs</h2>
+    <p>Prices are from listings I could find; rows marked "my estimate" had no Indian listing. The fairing kit is listed as sold out, so confirm price and restock with the maker.</p>
+  </div>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Part</th><th>Price</th><th>Where the number comes from</th></tr></thead>
+    <tbody>
+      <tr><td>Full fairing kit: headlight fairing, side panels, belly pan, headlight, 25 mm lower clip-on mounts</td><td class="n">₹39,990</td><td><a href="https://mkdesignsindia.com/products/full-fairing">MK Designs FF650 CafeR</a>, current listing (sold out). Was ₹29,990 at its 2022 launch.</td></tr>
+      <tr><td>Single seat</td><td class="n">₹3,500</td><td>Royal Enfield genuine accessory, <a href="https://bikedekho.com/news/new-royal-enfield-interceptor-650-and-continental-gt-650-accessories-released">2021 price list</a></td></tr>
+      <tr><td>Seat cowl, factory-painted Rocker Red (part 1990499)</td><td class="n">₹2,480–2,650</td><td>Royal Enfield genuine; <a href="https://ridersjunction.com/product/rocker-red-single-seat-cowl-for-continental-gt-650-1990499">dealer listing</a>. Price range is from the other colours' listings.</td></tr>
+      <tr><td>Tail tidy</td><td class="n">₹899–2,700</td><td><a href="https://carorbis.com/tail-tidy/">Carorbis listings</a> for the 650 twins</td></tr>
+      <tr><td>LED tail light strip</td><td class="n">₹1,000–3,000 <span class="est">my estimate</span></td><td>No Indian listing found</td></tr>
+      <tr><td>Paint the fairing panels to match Rocker Red, plus one second colour</td><td class="n">₹8,000–15,000 <span class="est">my estimate</span></td><td>No published price. Get a Pune quote; ask for the factory colour code match.</td></tr>
+      <tr><td>Fitting</td><td class="n">₹2,000–5,000 <span class="est">my estimate</span></td><td>The kit is described as bolt-on, under three hours with basic tools</td></tr>
+      <tr class="total"><td>Total</td><td class="n">₹58,000–72,000</td><td></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="muted">Going for a full respray instead: one custom shop's guide puts standard paint at ₹20,000 and up and candy finishes at ₹65,000 and up (<a href="https://www.devilscustoms.com/how-to-choose-the-perfect-custom-paint-job-for-your-ride/">Devils Customs</a>, a shop's own figure). That takes the build to about ₹1.15–1.2 lakh. Number boards, racing stripes and lettering are cheapest as vinyl, a few hundred rupees each at a sticker shop. A front half fairing alone was listed at ₹8,490 (<a href="https://gaadiwaadi.com/mk-designs-launches-cafe-racer-fairing-for-royal-enfield-interceptor-gt650/">MK Designs semi-fairing</a>, older price).</p>
+</section>
+
+<section>
+  <div class="two">
+    <div>
+      <h3>Order of work</h3>
+      <ol>
+        <li>Confirm the kit is back in stock and whether it ships painted or in primer.</li>
+        <li>Fit the single seat and Rocker Red cowl first. It is a five-minute job and shows you the tail line.</li>
+        <li>Dry-fit the fairing unpainted. Check steering lock, cable routing and clip-on clearance.</li>
+        <li>Ride it for a week in primer and watch engine temperature in traffic.</li>
+        <li>Then paint, using the tank as the colour reference.</li>
+        <li>Vinyl numbers and stripes, tail tidy and LED strip last.</li>
+      </ol>
+    </div>
+    <div>
+      <h3>Check before paying</h3>
+      <ul>
+        <li><b>Heat.</b> The 650 twin is air and oil cooled. A lower panel that closes off the cylinders traps heat; keep the kit's open sides or add vents for Pune traffic.</li>
+        <li><b>RC colour.</b> Keeping red as the main colour avoids a full colour change, but ask your RTO whether a second colour needs an endorsement.</li>
+        <li><b>Insurance and warranty.</b> Tell the insurer about the fairing. Royal Enfield may refuse warranty claims linked to it.</li>
+        <li><b>Clip-ons.</b> The kit drops the bars by 25 mm, so the riding position gets more committed.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h3>Price sources</h3>
+  <ul class="links">
+    <li><a href="https://mkdesignsindia.com/products/full-fairing">MK Designs: Full Fairing FF650 CafeR</a></li>
+    <li><a href="https://www.bikedekho.com/news/check-out-the-royal-enfield-650-twins-full-fairing-kit-price-starts-at-rs-29990?amp=1">BikeDekho: 650 twins full fairing kit from Rs 29,990</a></li>
+    <li><a href="https://www.rideapart.com/news/572026/mk-designs-bolt-on-fairing-royal-enfield-650/">RideApart: bolt-on fairing for the 650 twins</a></li>
+    <li><a href="https://www.returnofthecaferacers.com/royal-enfield-cafe-racer/gt650-body-kit/">Return of the Cafe Racers: Autologue RECK 2 kit</a></li>
+    <li><a href="https://carorbis.com/tail-tidy/">Carorbis: tail tidy listings</a></li>
+  </ul>
+</section>
+
+</div>
+
+<dialog id="lb" aria-label="Enlarged photo">
+  <img id="lbimg" alt="">
+  <div class="cap"><span id="lbcap"></span><button type="button" id="lbclose">Close</button></div>
+</dialog>
+
+<script>
+/* ---------- livery picker ---------- */
+var R="#a8141e", IV="#e3dccd", SI="#b5b9be", BK="#1f2023", GM="#53575d", WH="#efeee9", BL="#1d3f93", AL="#cfd2d6", GO="#c49a3a", YE="#f1d23a";
+var liveries=[
+ {id:"original",name:"Your render",tag:"As you sent it",chips:[R,IV,R],paint:"Two colours",
+  note:"The picture you sent, untouched. The GT 750 lettering is the image generator's; every other version says GT 650."},
+ {id:"ivory-gold",name:"Rocker Red and Ivory",tag:"Your render, as a GT 650",chips:[R,IV,GO,R],paint:"Two colours and a gold pinstripe",
+  note:"Your picture with GT 650 lettering and a gold pinstripe where red meets ivory. The ivory shows road grime fastest."},
+ {id:"all-red",name:"All Rocker Red",tag:"Cheapest paint",pick:1,chips:[R,R,R],paint:"One colour matched to the tank, vinyl number",
+  note:"Every panel in the tank's red with a white number board. One colour to match, so it is the cheapest full-fairing paint job."},
+ {id:"silver",name:"Red over Silver",tag:"Hides chips",pick:1,chips:[R,SI,R],paint:"Two colours",
+  note:"Metallic silver side panel, red everywhere else. Silver hides stone chips and dust far better than ivory."},
+ {id:"black-side",name:"Red over Satin Black",tag:"Lighter look",chips:[R,BK,R],paint:"Two colours and a red pinstripe",
+  note:"The side panel in satin black disappears into the engine, so the bike looks lighter and the red tank stands out."},
+ {id:"gunmetal",name:"Red over Gunmetal",tag:"Factory look",chips:[R,GM,R],paint:"Two colours and a red pinstripe",
+  note:"Dark grey side with a thin red line. Looks like something Royal Enfield could sell, and grey is forgiving on Indian roads."},
+ {id:"reverse",name:"Ivory nose, red body",tag:"1960s club racer",chips:[IV,R,IV],paint:"Two colours, vinyl number",
+  note:"Swaps the colours: ivory upper fairing and belly, red side panel. Reads like a period racer with a painted number board nose."},
+ {id:"endurance",name:"Endurance",tag:"CB1100R colours",chips:[R,WH,BL],paint:"Three colours",
+  note:"White side panel, blue band against the red and a blue belly pan, after the early-80s endurance racers. Busy, but very period."},
+ {id:"night",name:"Black and Gold",tag:"Night bike",chips:[BK,BK,GO,BK],paint:"Black fairing and cowl, gold pinstripe",
+  note:"Gloss black fairing, belly and seat cowl with gold pinstripes and lettering. The Rocker Red tank is the only colour on the bike."},
+ {id:"alu",name:"Bare Aluminium",tag:"Manx",chips:[AL,AL,AL],paint:"Metallic silver, vinyl number",
+  note:"Fairing, side and belly in polished-metal silver with a yellow number. The red tank and cowl carry all the colour."},
+ {id:"ago",name:"Yellow number board",tag:"Superveloce Ago",chips:[R,YE,SI,R],paint:"Two colours, vinyl number",
+  note:"Red over silver with an oval yellow number board on the nose, after the MV Agusta Ago edition."},
+ {id:"speed-stripe",name:"Ivory, red racing stripe",tag:"Racing stripe",chips:[R,IV,R],paint:"Two colours, vinyl stripe",
+  note:"One red band runs diagonally across the ivory panel. Cheap to add as vinyl, and easy to peel off if you tire of it."},
+ {id:"black-lower",name:"Red with black lowers",tag:"Easy to live with",pick:1,chips:[R,BK,BK],paint:"Two colours, vinyl number",
+  note:"Side panel and belly both satin black, upper fairing and tank red. Hides oil and road dirt where a bike gets dirtiest."}
+];
+function chips(c){return '<span class="chips" aria-hidden="true">'+c.map(function(x){return '<i style="background:'+x+'"></i>'}).join("")+'</span>'}
+var listEl=document.getElementById("list"), thumbsEl=document.getElementById("thumbs");
+listEl.innerHTML=liveries.map(function(l){
+  return '<button type="button" class="opt" data-id="'+l.id+'" aria-pressed="false">'+chips(l.chips)+'<span><b>'+l.name+'</b><small>'+l.tag+(l.pick?' · my pick':'')+'</small></span></button>';
+}).join("");
+thumbsEl.innerHTML=liveries.map(function(l){
+  return '<button type="button" class="thumb" data-id="'+l.id+'" aria-pressed="false"><img loading="lazy" src="mock/'+l.id+'.jpg" alt="'+l.name+'"><span>'+l.name+'</span></button>';
+}).join("");
+function show(id,scroll){
+  var l=liveries.filter(function(x){return x.id===id})[0]; if(!l) return;
+  var img=document.getElementById("main"); img.src="mock/"+l.id+".jpg"; img.alt="GT 650 mockup: "+l.name;
+  document.getElementById("mname").textContent=l.name;
+  var t=document.getElementById("mtag"); t.textContent=l.pick?"My pick · "+l.tag:l.tag; t.className="tag"+(l.pick?" pick":"");
+  document.getElementById("mnote").textContent=l.note;
+  document.getElementById("mpaint").textContent="Paint: "+l.paint;
+  document.querySelectorAll("[data-id]").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.id===id?"true":"false")});
+  try{localStorage.setItem("livery",id)}catch(e){}
+  if(scroll) document.querySelector(".picker").scrollIntoView({behavior:"smooth",block:"start"});
+}
+listEl.addEventListener("click",function(e){var b=e.target.closest("[data-id]"); if(b) show(b.dataset.id,false)});
+thumbsEl.addEventListener("click",function(e){var b=e.target.closest("[data-id]"); if(b) show(b.dataset.id,true)});
+var start="silver"; try{start=localStorage.getItem("livery")||start}catch(e){}
+show(start,false);
+
+/* ---------- photo boards ---------- */
+var W="https://commons.wikimedia.org/wiki/File:";
+var boards=[
+ {t:"The same idea from Royal Enfield",d:"The 1960s Continental GT raced with a red-over-white fairing, and the GT 750 show bike brings a half fairing back. Your picture is a mix of the two.",p:[
+  ["10.jpg","1966 Continental GT with a period race fairing, red over white","Mick from Northamptonshire","CC BY 2.0","Royal_Enfield_Continental_GT_1966_-_Flickr_-_mick_-_Lumix.jpg"],
+  ["04.jpg","Continental GT 750 show bike, red half fairing","802xr","CC BY-SA 4.0","Royal_Enfield_Continental_GT_750.jpg"],
+  ["05.jpg","Continental GT 750 show bike in blue","802xr","CC BY-SA 4.0","Royal_Enfield_Continental_GT_750_2027.jpg"],
+  ["09.jpg","1967 Continental GT, red tank and clip-ons","SG2012","CC BY 2.0","Royal_Enfield_Continental_GT_(1967).jpg"],
+  ["07.jpg","Continental GT 535 in red on a show stand","Decio \"desmodex\"","CC BY-SA 2.0","Royal_Enfield_Continental_GT_(10759997314).jpg"],
+  ["48.jpg","Continental GT 535, red, side on","Cjp24","CC BY-SA 4.0","Royal_Enfield_Continental_GT-pic1.jpg"],
+  ["49.jpg","Continental GT 535 with gold shocks","Thomas Grube","CC BY-SA 4.0","Continental_GT_535_2014.JPG"],
+  ["50.jpg","Continental GT 535 at Salão Duas Rodas 2017","Paulo Guereta","CC BY 2.0","Sal%C3%A3o_Duas_Rodas_2017_(38522832681).jpg"],
+  ["06.jpg","Continental GT tank badge","SnapMeUp","CC BY-SA 4.0","Fuel_tank_of_Royal_Enfield_Continental_GT.jpg"]]},
+ {t:"The starting point: stock 650 twins",d:"What the fairing has to bolt onto. Note how much of the look is the engine cases and spoked wheels, which a bolt-on kit leaves visible.",p:[
+  ["03.jpg","Continental GT 650 in red, stock","Raghurouthu1","CC BY-SA 4.0","Raghu1.jpg"],
+  ["02.jpg","Continental GT 650, stock, side on","Kiranpawar3210","CC BY-SA 4.0","Royal_Enfield_Continental_GT_650.jpg"],
+  ["01.jpg","Continental GT 650, stock, rear three-quarter","Cjp24","CC BY-SA 4.0","Royal_Enfield_Continental_GT_650_(1).jpg"],
+  ["00.jpg","Royal Enfield 650 twin in a showroom","AxelKing","CC BY-SA 3.0 de","Royal_Enfield_650_01.jpeg"],
+  ["15.jpg","Royal Enfield 650 twin with a red tank","AxelKing","CC BY-SA 3.0 de","Royal_Enfield_650_02.jpeg"],
+  ["11.jpg","Interceptor 650, studio cut-out","Auge=mit","CC BY-SA 4.0","Royal_Enfield_650_Interceptor_A-Seite_noBG.jpg"],
+  ["12.jpg","INT 650, side on","Hu Nhu","CC BY-SA 4.0","Royal_Enfield_INT_650_motorcycle.jpg"],
+  ["14.png","Front brake and engine of a 650 twin","Penoovindos","CC BY-SA 4.0","ByBre_front_disk_brake_RE_650.png"]]},
+ {t:"MV Agusta Superveloce",d:"The modern benchmark for a retro full fairing. Borrow the two-tone split that runs downhill from the nose, and the round headlight sunk into the fairing.",p:[
+  ["16.jpg","Superveloce Ago, red and silver with a yellow number board","Matthb1395","CC BY-SA 4.0","Mv_Agusta_Superveloce_Ago_(2021).jpg"],
+  ["18.jpg","2021 Superveloce 800, red over silver","DestinationFearFan","CC BY-SA 4.0","2021_MV_Agusta_Superveloce_800.jpg"],
+  ["19.jpg","Superveloce 800 (2019)","Matthb1395","CC BY-SA 4.0","MV_Agusta_Superveloce_800_(2019).jpg"],
+  ["20.jpg","Superveloce 800 Serie Oro","Matthb1395","CC BY-SA 4.0","MV_Agusta_Superveloce_800_Serie_Oro_.jpg"],
+  ["21.jpg","Superveloce 1000 Serie Oro (2024)","Matthb1395","CC BY-SA 4.0","MV_AGUSTA_SUPERVELOCE_1000_SERIE_ORO_(2024).jpg"],
+  ["51.jpg","Superveloce in gold and grey","Cjp24","CC BY-SA 4.0","MV_Agusta_Superveloce_(1).jpg"],
+  ["17.jpg","Superveloce 800 in grey, front view","Calreyn88","CC BY-SA 4.0","MV_Agusta_Superveloce_800.jpg"]]},
+ {t:"Ducati Paul Smart and 900 Super Sport",d:"Half fairing on an air-cooled twin with the engine left open, which is the layout that suits the GT 650 best. Borrow the single coloured band across a plain fairing.",p:[
+  ["22.jpg","Ducati Paul Smart 1000, silver half fairing","Brian Snelson","CC BY 2.0","Ducati_1000_Paul_Smart.jpg"],
+  ["24.jpg","Paul Smart 1000 LE (2006)","StealthFX","Public domain","Ducati_PaulSmart1000LE_2006.jpg"],
+  ["23.jpg","Paul Smart 1000 Sportclassic","Piero","CC BY-SA 3.0","Ducati_Paul_Smart_1000_Sportclassic.JPG"],
+  ["25.jpg","1975 Ducati 900 Super Sport, blue and silver","Calreyn88","CC BY-SA 4.0","1975_Ducati_900_Super_Sport_Desmo.jpg"]]},
+ {t:"Moto Guzzi V7 Racer",d:"No fairing at all, only a number board, fly screen and seat cowl. Useful as the low-cost end: red frame accents and race-number side panels do most of the work.",p:[
+  ["27.jpg","V7 Racer (2010), number 7 side panels","CheminduCret","CC0","Moto_Guzzi_V7_Racer_2010_museum.jpg"],
+  ["26.jpg","V7 Racer at the Guzzi museum","Guzzista76","CC BY-SA 4.0","Moto_Guzzi_V7_Racer_Museo_Guzzi_2026.jpg"],
+  ["28.jpg","V7 Racer cockpit and tank strap","CheminduCret","CC0","Moto_Guzzi_V7_Racer_2010_museum_cockpit.jpg"],
+  ["29.jpg","V7 Racer at a show","Tony Hisgett","CC BY 2.0","Moto_Guzzi_V7_Racer.jpg"],
+  ["30.jpg","V7 Racer, Paris 2011","Thesupermat","CC BY-SA 3.0","Paris_-_Salon_de_la_moto_2011_-_Moto_Guzzi_-_V7_Racer_-_001.jpg"]]},
+ {t:"Norton Manx",d:"The original British racer the café racers copied. Bare metal tank and fairing, hump seat. The modern Manx R shows the same idea as a full fairing.",p:[
+  ["32.jpg","Norton Manx, both sides","Commons contributor","CC BY-SA 3.0","Norton_Manx_rightandleftside_noBG.jpg"],
+  ["33.jpg","1962 Norton Manx 500","Thesupermat","CC BY-SA 4.0","Norton_Manx_500_-_1962_-_Mondial_de_l%27Automobile_de_Paris_2018_-_001.jpg"],
+  ["37.jpg","1952 Manx Norton with number 1 plate","David Merrett","CC BY 2.0","1952_Manx_Norton_(49254446233).jpg"],
+  ["36.jpg","Geoff Duke racing a Norton","Harry Pot / Anefo","CC0","500_cc_klasse._Geoff_Duke_(Norton)_winnaar,_Bestanddeelnr_904-6709.jpg"],
+  ["34.jpg","Norton Manx R, silver full fairing","MotorideSA","CC BY-SA 4.0","Norton_Manx_R.jpg"],
+  ["35.jpg","2026 Norton Manx R","Kawasaki ninja 400","CC0","2026_Norton_Manx_R.jpg"]]},
+ {t:"Honda CB1100R and Hawk 11",d:"Red, white and blue endurance colours on a big air-cooled engine. The Hawk 11 is Honda's recent take on a rounded half fairing.",p:[
+  ["39.jpg","Honda CB1100R, red, white and blue","Cjp24","CC BY-SA 4.0","Honda_CB_1100R_(1).jpg"],
+  ["38.jpg","CB1100R in the Honda Collection Hall","Rainmaker47","CC BY-SA 3.0","Honda_CB1100R_in_the_Honda_Collection_Hall.JPG"],
+  ["40.jpg","CB1100R with race number","DaiFh","CC BY-SA 3.0","MotoLegende2009_03_honda_cb1100r.jpg"],
+  ["47.png","2022 Honda Hawk 11, rounded half fairing","Masa Channel","CC BY 3.0","2022_Honda_HAWK11.png"]]},
+ {t:"Bimota KB4 and Yamaha XSR900 GP",d:"Current factory bikes with retro full fairings. Borrow the boxy 1980s nose, the coloured seat pad and the number on the tail.",p:[
+  ["41.jpg","Bimota KB4 (2022), red and white","Matthb1395","CC BY-SA 4.0","Bimota_KB4_(2022).jpg"],
+  ["43.jpg","Bimota KB4 RC","Matthb1395","CC BY-SA 4.0","Bimota_KB4_RC_(2022).jpg"],
+  ["42.jpg","Bimota KB4 in black and gold","AVMOTO","CC BY-SA 4.0","Bimota_KB4_2025.jpg"],
+  ["44.jpg","Yamaha XSR900 GP, yellow speed-block colours","MotorideSA","CC BY-SA 4.0","Yamaha_XSR900_GP_2026.jpg"],
+  ["45.jpg","Yamaha XSR900 GP in blue","802xr","CC BY 4.0","Yamaha_XSR900_GP.jpg"]]}
+];
+function esc(s){return s.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;")}
+document.getElementById("boards").innerHTML=boards.map(function(b){
+  return '<div class="board"><div class="lead"><h3>'+b.t+'</h3><p class="muted">'+b.d+'</p></div><div class="photos">'+
+   b.p.map(function(p){return '<figure><button type="button" data-src="img/'+p[0]+'" data-cap="'+esc(p[1])+'" aria-label="Enlarge: '+esc(p[1])+'"><img loading="lazy" src="img/'+p[0]+'" alt="'+esc(p[1])+'"></button><figcaption>'+esc(p[1])+'<small>'+esc(p[2])+' · '+p[3]+' · <a href="'+W+p[4]+'">source</a></small></figcaption></figure>';}).join("")+
+   '</div></div>';
+}).join("");
+var lb=document.getElementById("lb");
+document.getElementById("boards").addEventListener("click",function(e){
+  var b=e.target.closest("button[data-src]"); if(!b) return;
+  document.getElementById("lbimg").src=b.dataset.src; document.getElementById("lbimg").alt=b.dataset.cap;
+  document.getElementById("lbcap").textContent=b.dataset.cap;
+  if(lb.showModal) lb.showModal(); else lb.setAttribute("open","");
+});
+document.getElementById("lbclose").addEventListener("click",function(){lb.close()});
+lb.addEventListener("click",function(e){ if(e.target===lb) lb.close(); });
+</script>
+
+</body>
+</html>
