@@ -33,6 +33,19 @@
         <section>
             <h2>Projects</h2>
 
+            <article class="project" id="dealguard">
+                <h3><a href="https://dealguard-254570106808.asia-southeast1.run.app">DealGuard</a> <span class="meta">2026 · solo</span></h3>
+                <p>A scam check for buyer–seller chats on Singapore's second-hand marketplaces. It names the scam pattern the Singapore Police describe, quotes the words that give it away, and decides whether to warn the user, hold the chat for a person or let the deal go on. I designed and built all of it.</p>
+                <ul>
+                    <li>A keyword pass in English, Malay and Chinese, then Gemini Flash-Lite; a stronger model takes a second look only when the first is unsure or disagrees with the keywords.</li>
+                    <li>Every quote the model gives is checked against the chat, and a scam call without real evidence goes to a person instead of warning the user.</li>
+                    <li>On 124 labelled test chats (model-written, in English, Singlish, Chinese and Malay) it caught every scam with no false alarms on honest deals, against 60% caught by keywords alone, at about $0.60 per 1,000 chats.</li>
+                    <li>Phone-style demo: play a scam, or write your own chat and see the verdict, the evidence and the cost of each check.</li>
+                </ul>
+                <p class="stack">Python · FastAPI · Gemini · Pydantic structured output · vanilla JS · GCP Cloud Run</p>
+                <p class="project-links"><a href="https://dealguard-254570106808.asia-southeast1.run.app">live demo</a></p>
+            </article>
+
             <article class="project" id="assistant">
                 <h3><a href="https://salesbot-254570106808.asia-south1.run.app/demo/">AI lead assistant</a> <span class="meta">2026 · solo</span></h3>
                 <p>A chat assistant for a business's website and WhatsApp that answers enquiries from the business's own information, qualifies the lead, books a visit and hands over to a person. I designed and built all of it, and it is the chat on this page.</p>
