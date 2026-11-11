@@ -21,6 +21,15 @@
         .open:hover, .open:focus-visible { border-color: var(--link); }
         ol { padding-left: 1.25rem; }
         li { margin: 0.35rem 0; }
+        .gate { margin: 1.5rem 0; display: grid; gap: 0.6rem; max-width: 320px; }
+        [hidden] { display: none !important; }
+        .gate label { font-size: 0.85rem; color: var(--muted); }
+        .gate input, .gate button {
+            font: inherit; padding: 0.7rem 0.9rem; border-radius: 8px;
+            border: 1px solid var(--rule); background: var(--bg); color: var(--fg);
+        }
+        .gate button { font-weight: 600; cursor: pointer; }
+        .gate input:focus-visible, .gate button:focus-visible { outline: 2px solid var(--link); outline-offset: 1px; }
     </style>
 </head>
 <body>
@@ -30,20 +39,61 @@
             <p class="tag">My coding agents run on my own machine. From any device I can see each one, send it a prompt, and approve whatever it is waiting on.</p>
         </header>
 
-        <a class="open" href="https://claude.ai/code">Open my agents</a>
+        <form id="gate" class="gate" autocomplete="off">
+            <label for="pw">Password</label>
+            <input id="pw" type="password" autocapitalize="characters" autocomplete="current-password" required>
+            <button type="submit">Unlock</button>
+            <p id="gate-msg" class="tag" role="status"></p>
+        </form>
 
-        <section>
-            <h2>How it works</h2>
-            <ol>
-                <li>Every agent session on my computer connects to Claude Code Remote Control under its own name.</li>
-                <li>The link above opens the list of sessions (on a phone, the Claude app under Code works too). It needs my sign-in.</li>
-                <li>Pick an agent to read what it is doing, type the next instruction, or answer a permission prompt or question. The agent on my computer picks it up straight away.</li>
-            </ol>
-        </section>
+        <div id="content" hidden>
+            <a class="open" href="https://claude.ai/code">Open my agents</a>
+
+            <section>
+                <h2>How it works</h2>
+                <ol>
+                    <li>Every agent session on my computer connects to Claude Code Remote Control under its own name.</li>
+                    <li>The link above opens the list of sessions (on a phone, the Claude app under Code works too). It needs my sign-in.</li>
+                    <li>Pick an agent to read what it is doing, type the next instruction, or answer a permission prompt or question. The agent on my computer picks it up straight away.</li>
+                </ol>
+            </section>
+        </div>
 
         <footer>
             <p><a href="/">back to prathameshjadhav.in</a></p>
         </footer>
     </main>
+    <script>
+        // Only a SHA-256 of the password is in this file. A device that unlocked once stays unlocked.
+        (function () {
+            var HASH = "922bfde315fcfe9135f8db592de18f6b2994021b0a338ea72cbd0c0ea2c03166";
+            var KEY = "agents-unlocked";
+            var gate = document.getElementById("gate");
+            var content = document.getElementById("content");
+            var msg = document.getElementById("gate-msg");
+            function unlock() { gate.hidden = true; content.hidden = false; }
+            try { if (localStorage.getItem(KEY) === HASH) unlock(); } catch (e) {}
+            if (!window.crypto || !crypto.subtle) {
+                if (location.protocol === "http:") location.protocol = "https:";
+                msg.textContent = "This page needs a secure (https) connection.";
+                return;
+            }
+            async function sha256(text) {
+                var bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+                return Array.from(new Uint8Array(bytes)).map(function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+            }
+            gate.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                var input = document.getElementById("pw");
+                if (await sha256(input.value.trim().toUpperCase()) === HASH) {
+                    try { localStorage.setItem(KEY, HASH); } catch (e) {}
+                    unlock();
+                } else {
+                    msg.textContent = "Wrong password.";
+                    input.select();
+                }
+            });
+        })();
+    </script>
 </body>
 </html>
