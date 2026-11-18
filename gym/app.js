@@ -361,9 +361,30 @@ function route() {
   return { v: VIEWS[v] ? v : 'today', sub };
 }
 
+// Password gate: only a SHA-256 of the password is in this file. A device that unlocked once stays unlocked.
+const GATE_HASH = 'd74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1';
+const GATE_KEY = 'gym-unlocked';
+let unlocked = false;
+try { unlocked = localStorage.getItem(GATE_KEY) === GATE_HASH; } catch (e) { /* storage blocked */ }
+async function sha256(text) {
+  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return [...new Uint8Array(bytes)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+function vGate() {
+  return `<form class="card form gate" data-form="gate" autocomplete="off">
+    <h3>Private</h3>
+    <label>Password <input class="inp" name="pw" type="password" autocapitalize="none" autocomplete="current-password" required></label>
+    <button class="btn primary">Unlock</button>
+    <p class="small muted" id="gate-msg" role="status"></p>
+  </form>`;
+}
+
 function render() {
-  if (handleImport()) return;
   const main = $('#view');
+  const locked = !unlocked;
+  $('#nav').hidden = locked; $('.toplinks').hidden = locked;
+  if (locked) { $('#title').textContent = 'Gym'; main.innerHTML = vGate(); $('input[name=pw]', main)?.focus(); return; }
+  if (handleImport()) return;
   const { v, sub } = route();
   if (v === 'sleep' && (sub === 'bed' || sub === 'wake')) { history.replaceState(null, '', '#sleep'); if (sub === 'bed' && !S.bedPending) { act.bed(); return; } if (sub === 'wake' && S.bedPending) { act.wake(); return; } }
   $('#title').textContent = v === 'train' && S.active ? `${DAYS[S.active.day].name} day` : TITLES[v];
@@ -948,6 +969,14 @@ function foodListHtml() {
 
 // ---------- forms & inputs ----------
 const forms = {
+  async gate(fd) {
+    const msg = $('#gate-msg');
+    if (!window.crypto?.subtle) { msg.textContent = 'This page needs a secure (https) connection.'; return; }
+    if (await sha256(String(fd.get('pw')).trim().toLowerCase()) === GATE_HASH) {
+      try { localStorage.setItem(GATE_KEY, GATE_HASH); } catch (e) { /* stays unlocked for this visit only */ }
+      unlocked = true; render();
+    } else { msg.textContent = 'Wrong password.'; $('input[name=pw]')?.select(); }
+  },
   weight(fd) { const w = num(fd.get('w')); if (!w) return; upsertBody(today(), { w }); save(); toast(`Saved ${w} kg`); render(); },
   measure(fd) { const waist = num(fd.get('waist')), neck = num(fd.get('neck')); if (!waist || !neck) { toast('Enter waist and neck'); return; } upsertBody(today(), { waist, neck }); save(); render(); },
   past(fd) { S.active = newActive(fd.get('day'), fd.get('date'), true); save(); closeModal(); location.hash = '#train'; render(); },
@@ -1040,5 +1069,5 @@ function handleImport() {
 window.addEventListener('hashchange', render);
 render();
 if (S.active?.rest) runTimer();
-if (S.active && !S.active.past) { keepAwake(true); runTimer(); }
+if (unlocked && S.active && !S.active.past) { keepAwake(true); runTimer(); }
 if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
