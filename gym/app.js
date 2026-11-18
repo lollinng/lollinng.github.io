@@ -148,6 +148,7 @@ function suggest(ex, ph) {
   const hist = exHistory(ex);
   if (!hist.length) {
     if (inc0(E)) return { w: 0, reps: hi, why: E.inc === 0 ? `Bodyweight: log 0 kg (or the weight you add). Aim for ${hi} clean reps.` : `Log the assist weight. Pick an assist that lets you do ${hi} reps with 3–4 to spare.` };
+    if (E.start != null) return { w: E.start, reps: hi, why: `Starting weight ${kg(E.start)} kg (machines differ between gyms). Set 1 is a test: if ${hi} reps feel easy, go up a step on set 2. Stop ${ph.rir} reps short.` };
     return { w: null, reps: hi, why: `First time: pick a weight you could lift about ${hi + 3} times, do ${hi}.` };
   }
   const last = hist[0];
@@ -716,7 +717,7 @@ function vStats() {
 function vPlan() {
   const ms = S.body.filter((b) => b.waist && b.neck).sort((a, b) => a.date.localeCompare(b.date)).at(-1);
   const bf = ms ? navyBF(ms.waist, ms.neck, S.profile.heightCm) : null;
-  return planView({ S, tg: targets(), week: weekNo(), phaseOf, dayPlan, schedOf, PHASES, DAYS, SCHEDULES, EXERCISES, addDays, fmtShort, esc, restFor, mmss, bf });
+  return planView({ S, tg: targets(), week: weekNo(), phaseOf, dayPlan, schedOf, PHASES, DAYS, SCHEDULES, EXERCISES, addDays, fmtShort, esc, restFor, mmss, bf, suggest, kg });
 }
 
 function vSettings() {

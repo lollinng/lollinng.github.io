@@ -21,7 +21,7 @@ const SOURCES = [
   ['IFCT 2017: Indian Food Composition Tables (NIN)', 'https://www.nin.res.in/ebooks/IFCT2017.pdf'],
 ];
 
-export function planView({ S, tg, week, phaseOf, dayPlan, schedOf, PHASES, DAYS, SCHEDULES, EXERCISES, addDays, fmtShort, esc, restFor, mmss, bf }) {
+export function planView({ S, tg, week, phaseOf, dayPlan, schedOf, PHASES, DAYS, SCHEDULES, EXERCISES, addDays, fmtShort, esc, restFor, mmss, bf, suggest, kg }) {
   const p = S.profile; const ph = phaseOf(week);
   const bfNow = bf ?? 24; const measured = bf != null;
   const lean = tg.w * (1 - bfNow / 100);
@@ -98,15 +98,30 @@ export function planView({ S, tg, week, phaseOf, dayPlan, schedOf, PHASES, DAYS,
     </ol>
   </section>
 
-  <section class="card">
-    <h3>How the weight goes up</h3>
-    <ul>
-      <li><b>Double progression.</b> Each exercise has a rep range (say 8–12). Keep the weight until every set hits 12, then add one step (2.5 kg upper body, 5 kg legs, 1–2 kg dumbbells) and start again at 8.</li>
-      <li><b>Weeks 1–3 ramp fast.</b> Your starting weights are far below what you can do. If an exercise felt easy, the next session goes up a step even before you reach the top of the range, two steps if you did.</li>
-      <li><b>Stalls.</b> If you miss the bottom of the range twice and it felt hard, drop a step and build back.</li>
-      <li><b>Deloads</b> in weeks 8 and 15: same weights, 2 sets, easy. Take one early if reps drop on 2+ lifts for 2 sessions in a row.</li>
-    </ul>
-    <p class="note small">Weeks 1–2: no sets to failure and no slow lowering. Coming back after a layoff is the main risk window for rhabdomyolysis. Cola-coloured urine, swelling, or pain far beyond normal soreness means see a doctor that day.</p>
+  <section class="card" id="overload">
+    <h3>Progressive overload</h3>
+    <p>Every session, beat last time on each exercise by <b>one</b> of these, in this order. Never both at once, and never at the cost of form.</p>
+    <ol class="steps-list">
+      <li><b>+1 rep</b> on as many sets as you can, same weight.</li>
+      <li>When <b>every set hits the top of the rep range</b>, add one weight step and drop back to the bottom of the range.</li>
+      <li>Weeks 1–3 only: if it felt <b>easy</b>, add a step even before the top of the range (two steps if you also hit the top).</li>
+      <li>Missed the bottom of the range two sessions running and it felt hard: drop one step and build back.</li>
+    </ol>
+    <h4>Your defaults</h4>
+    <table class="tbl kv">
+      <tr><td>Rep range</td><td>Big lifts 8–12 (leg press 10–15), small muscles 12–15</td></tr>
+      <tr><td>Weight step</td><td>Upper-body machines and cables 2.5 kg · leg machines 5 kg · dumbbells 1–2 kg (one pair up) · lateral raises 1–1.25 kg</td></tr>
+      <tr><td>Sets</td><td>Week 1: 2 · weeks 2–7: 3 (4 on the first exercise from week 4) · week 8: 2 · weeks 9–14: 3, 4 on the first two</td></tr>
+      <tr><td>Effort</td><td>Week 1: stop 4–5 reps short · week 2: 3 · week 3: 2–3 · weeks 4–7: 1–2 · weeks 9–14: 0–2</td></tr>
+      <tr><td>Rest</td><td>${mmss(S.settings.restHeavy ?? 150)} heavy free weights · ${mmss(S.settings.restCompound)} machine compounds · ${mmss(S.settings.restIso)} isolation</td></tr>
+      <tr><td>Tempo</td><td>About 2 seconds down, controlled up, no bouncing</td></tr>
+      <tr><td>Tag</td><td>After each exercise tap <b>easy</b> (could do 4+ more), <b>good</b> (2–3 more) or <b>hard</b> (0–1 more)</td></tr>
+    </table>
+    <h4>Next time, day by day</h4>
+    <p class="small muted">Live from your log: the weight and reps to aim for in your next session of each day. Starting weights are guesses for an unfamiliar gym; set 1 is a test, so adjust on set 2.</p>
+    ${[...new Set([...schedOf(week).days, ...(week < 3 ? main.days : [])])].map((d) => `<details class="dayplan"${d === 'pull' ? ' open' : ''}><summary><b>${DAYS[d].name}</b> <span class="muted small">${esc(DAYS[d].focus)}</span></summary>
+      <table class="tbl"><tr><th>Exercise</th><th class="num">Aim</th><th class="num">Step</th></tr>${dayPlan(d, Math.max(week, d === 'upper' || d === 'lower' ? 3 : week)).map((x) => { const E = EXERCISES[x.ex]; const sg = suggest(x.ex, phaseOf(week)); const w = sg.w == null ? '?' : `${kg(sg.w)} kg`; return `<tr><td>${esc(E.name)}</td><td class="num"><b>${w}</b> × ${sg.reps}</td><td class="num muted">${E.inc ? `${kg(Math.abs(E.inc))} kg` : 'reps'}</td></tr>`; }).join('')}</table></details>`).join('')}
+    <p class="note small">Weeks 1–2: no sets to failure and no slow lowering. Coming back after a layoff is the main risk window for rhabdomyolysis. Cola-coloured urine, swelling, or pain far beyond normal soreness means see a doctor that day. Deloads in weeks 8 and 15 (same weights, 2 easy sets); take one early if reps drop on 2+ lifts for 2 sessions in a row.</p>
   </section>
 
   <section class="card">
