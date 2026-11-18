@@ -247,13 +247,19 @@ function suggest(ex, ph) {
   const ramp = !!ph.ramp;
   const inc = E.inc;
   const fix = (w) => Math.max(0, roundTo(w, 0.25));
+  // Dumbbells come in fixed steps. If he's on a 2.5 kg-step dumbbell (5, 7.5, 10), go to the next real one,
+  // and when that is a big jump (7.5 -> 10 is +33%), start lower in the rep range and build back up.
+  const db = /dumbbell/i.test(`${E.name} ${E.cue}`) && topW > 0 && topW % 2.5 === 0;
+  const up = (w) => (db ? Math.ceil(w / 2.5 - 1e-9) * 2.5 : fix(w));
+  const upReps = (w, reps) => (db && (w - topW) / topW > 0.15 ? Math.max(6, lo - 2) : reps);
+  const bigJump = (w) => (db && (w - topW) / topW > 0.15 ? ` That's the next dumbbell, a big jump: aim for ${Math.max(6, lo - 2)} reps and build back to ${hi}. If you can't get ${Math.max(6, lo - 2)}, stay at ${kg(topW)} kg and add reps instead.` : '');
   if (ph.deload) return { w: topW, reps: lo, why: `Deload week: same ${kg(topW)} kg, 2 sets, stop 3–4 reps short.` };
   if (inc === 0) return { w: topW, reps: Math.min(maxR + 1, hi + 5), why: `Bodyweight: beat ${maxR} reps.` };
   if (hitTop) {
-    const jumps = ramp && last.effort === 'easy' ? 2 : 1;
-    return { w: fix(topW + jumps * inc), reps: lo, why: `You hit ${hi} on every set${jumps > 1 ? ' and it felt easy' : ''}: +${kg(Math.abs(jumps * inc))} kg, start again at ${lo} reps.` };
+    const jumps = ramp && last.effort === 'easy' ? 2 : 1; const w = up(topW + jumps * inc);
+    return { w, reps: upReps(w, lo), why: `You hit ${hi} on every set${jumps > 1 ? ' and it felt easy' : ''}: +${kg(w - topW)} kg, start again at ${upReps(w, lo)} reps.${bigJump(w)}` };
   }
-  if (ramp && last.effort === 'easy' && hitLo) return { w: fix(topW + inc), reps: Math.max(lo, minR - 1), why: `Ramp-up and it felt easy: up one step to ${kg(fix(topW + inc))} kg.` };
+  if (ramp && last.effort === 'easy' && hitLo) { const w = up(topW + inc); return { w, reps: upReps(w, Math.max(lo, minR - 1)), why: `Ramp-up and it felt easy: up one step to ${kg(w)} kg.${bigJump(w)}` }; }
   if (hitLo) return { w: topW, reps: Math.min(hi, minR + 1), why: `Same ${kg(topW)} kg, aim for ${Math.min(hi, minR + 1)}+ reps on every set. Add weight once all sets hit ${hi}.` };
   const prevMissed = hist[1] && Math.min(...hist[1].sets.map((s) => s.r)) < lo;
   if (last.effort === 'hard' && prevMissed) return { w: fix(topW - inc), reps: lo, why: `Missed ${lo} reps twice: drop to ${kg(fix(topW - inc))} kg and build back.` };

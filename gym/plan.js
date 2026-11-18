@@ -110,7 +110,7 @@ export function planView({ S, tg, week, phaseOf, dayPlan, schedOf, PHASES, DAYS,
     <h4>Your defaults</h4>
     <table class="tbl kv">
       <tr><td>Rep range</td><td>Big lifts 8–12 (leg press 10–15), small muscles 12–15</td></tr>
-      <tr><td>Weight step</td><td>Upper-body machines and cables 2.5 kg · leg machines 5 kg · dumbbells 1–2 kg (one pair up) · lateral raises 1–1.25 kg</td></tr>
+      <tr><td>Weight step</td><td>Upper-body machines and cables 2.5 kg · leg machines 5 kg · dumbbells: the next pair on the rack (7.5 → 10 kg is a big jump, so drop to the bottom of the rep range and build up) · lateral raises 1–1.25 kg</td></tr>
       <tr><td>Sets</td><td>Week 1: 2 · weeks 2–7: 3 (4 on the first exercise from week 4) · week 8: 2 · weeks 9–14: 3, 4 on the first two</td></tr>
       <tr><td>Effort</td><td>Week 1: stop 4–5 reps short · week 2: 3 · week 3: 2–3 · weeks 4–7: 1–2 · weeks 9–14: 0–2</td></tr>
       <tr><td>Rest</td><td>${mmss(S.settings.restHeavy ?? 150)} heavy free weights · ${mmss(S.settings.restCompound)} machine compounds · ${mmss(S.settings.restIso)} isolation</td></tr>
