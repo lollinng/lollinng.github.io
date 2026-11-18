@@ -1,5 +1,9 @@
-import { EXERCISES, DAYS, SCHEDULES, PHASES, MUSCLE_TARGETS, FOODS, MEALS, MEAL_TEMPLATES, HABITS, MY_PROFILE, MY_HISTORY } from './data.js';
+import { EXERCISES, DAYS, SCHEDULES, PHASES, MUSCLE_TARGETS, FOODS, ALIASES, MEALS, MEAL_TEMPLATES, HABITS, MY_PROFILE, MY_HISTORY } from './data.js';
 import { planView } from './plan.js';
+import { parseMeal, buildIndex } from './meals.js';
+
+// Backend (Cloudflare Worker, ~/personal/gym/worker). Empty = run fully offline with no sync, AI or photos.
+const API = '';
 
 // ---------- small utils ----------
 const $ = (s, el = document) => el.querySelector(s);
@@ -43,9 +47,12 @@ const defaults = () => ({
   grocery: {},
   swaps: {},
   settings: { restHeavy: 150, restCompound: 120, restIso: 90, sound: true, vibrate: true, wake: true, notify: false },
+  applied: MY_HISTORY.map((w) => w.id), // inbox / built-in entries already merged, so they never come back after a delete
 });
+let fresh = false; // nothing saved on this device yet: a new install can restore from the cloud
 let S = load();
-const ui = { foodTab: 'log', foodDate: today(), addMeal: 'Breakfast', addMode: 'log', liftEx: null, query: '' };
+const ui = { foodTab: 'log', foodDate: today(), addMeal: 'Breakfast', addMode: 'log', liftEx: null, query: '', mtext: '', mrows: [], mskip: new Set(), mai: {}, mphoto: null, mbusy: false };
+seedHistory();
 
 function load() {
   try {
@@ -55,10 +62,91 @@ function load() {
       return { ...d, ...o, profile: o.profile || d.profile, settings: { ...d.settings, ...(o.settings || {}) } };
     }
   } catch (e) { /* private mode or corrupt: start fresh */ }
+  fresh = true;
   return defaults();
 }
 function save() {
   try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('Could not save on this device (storage blocked or full). Export a backup.'); }
+  fresh = false;
+  scheduleSync();
+}
+// Sessions added to MY_HISTORY after the first open get merged once (by id), even into existing data.
+function seedHistory() {
+  S.applied ||= [];
+  const add = MY_HISTORY.filter((w) => !S.applied.includes(w.id));
+  if (!add.length) return;
+  for (const w of add) { if (!S.workouts.some((x) => x.id === w.id)) S.workouts.push(structuredClone(w)); S.applied.push(w.id); }
+  if (!fresh) try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* ignore */ }
+}
+
+// ---------- cloud sync ----------
+// The whole state goes to the Worker a few seconds after each change; the reply carries the inbox
+// (meals or sessions Claude added from chat), merged here once by id.
+const ls = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return null; } return null; };
+const SYNC_KEY = 'gym-sync';
+const sync = { t: null, busy: false, dirty: false, last: +ls('gym-synced') || null, err: null };
+function deviceId() { let d = ls('gym-device'); if (!d) { d = `d${uid()}`; ls('gym-device', d); } return d; }
+const canSync = () => !!(API && unlocked && ls(SYNC_KEY));
+async function api(path, body, opts = {}) {
+  const r = await fetch(API + path, { method: body ? 'POST' : 'GET', headers: { authorization: `Bearer ${ls(SYNC_KEY)}`, ...(body ? { 'content-type': 'application/json' } : {}) }, body: body ? JSON.stringify(body) : undefined, ...opts });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+  return j;
+}
+function scheduleSync(ms = 4000) { if (!canSync()) return; sync.dirty = true; clearTimeout(sync.t); sync.t = setTimeout(pushSync, ms); }
+function syncBody() {
+  const bucket = `${today()}-${Math.floor(new Date().getHours() / 6)}`;
+  return { body: { device: deviceId(), at: new Date().toISOString(), ua: navigator.userAgent, daily: ls('gym-hist') !== bucket, state: S }, bucket };
+}
+async function pushSync() {
+  if (!canSync() || sync.busy) return;
+  sync.busy = true; sync.dirty = false; clearTimeout(sync.t);
+  const { body, bucket } = syncBody();
+  try {
+    const r = await api('/sync', body);
+    sync.last = Date.now(); sync.err = null; ls('gym-synced', String(sync.last)); if (body.daily) ls('gym-hist', bucket);
+    if (applyInbox(r.inbox || [])) { save(); render(); }
+  } catch (e) { sync.err = String(e.message || e); }
+  finally { sync.busy = false; if (sync.dirty) scheduleSync(); }
+  if (route().v === 'settings') { const el = $('#syncState'); if (el) el.textContent = syncText(); }
+}
+// Leaving the app: send pending changes right away (keepalive survives the page closing).
+function flushSync() {
+  if (!canSync() || !sync.dirty) return;
+  clearTimeout(sync.t);
+  const { body } = syncBody(); const txt = JSON.stringify(body);
+  fetch(API + '/sync', { method: 'POST', headers: { authorization: `Bearer ${ls(SYNC_KEY)}`, 'content-type': 'application/json' }, body: txt, keepalive: txt.length < 60000 }).then(() => { sync.dirty = false; sync.last = Date.now(); ls('gym-synced', String(sync.last)); }).catch(() => {});
+}
+function applyInbox(items) {
+  S.applied ||= []; let n = 0, changed = false;
+  for (const it of items) {
+    if (!it?.id || S.applied.includes(it.id)) continue;
+    const d = it.data;
+    if (it.kind === 'workout' && d?.id && d.items) { if (!S.workouts.some((w) => w.id === d.id)) { S.workouts.push(d); n++; } }
+    else if (it.kind === 'food' && it.date && d?.name) { (S.food[it.date] ||= []).push({ ...d, inbox: it.id }); n++; }
+    else if (it.kind === 'body' && d?.date) { upsertBody(d.date, d); n++; }
+    else if (it.kind === 'sleep' && d?.bed && d?.wake) { S.sleep.push({ id: it.id, q: null, ...d }); n++; }
+    else if (it.kind === 'profile' && d) { Object.assign(S.profile, d); n++; }
+    S.applied.push(it.id); changed = true;
+  }
+  if (n) setTimeout(() => toast(`Claude added ${n} entr${n > 1 ? 'ies' : 'y'} to your log`), 300);
+  return changed;
+}
+// A new install (say the iPhone home-screen app, which doesn't share Safari's storage) pulls the latest copy.
+async function restoreIfFresh() {
+  if (!fresh || !canSync()) return;
+  try {
+    const r = await api('/state');
+    if (!fresh || !r.state?.workouts) return;
+    const d = defaults(); S = { ...d, ...r.state, settings: { ...d.settings, ...(r.state.settings || {}) } };
+    seedHistory(); save(); render(); toast(`Restored your data from the cloud (${S.workouts.length} sessions)`);
+  } catch (e) { sync.err = String(e.message || e); }
+}
+function syncText() {
+  if (!API) return 'Off: this copy has no server set.';
+  if (!ls(SYNC_KEY)) return 'Off on this device: lock and unlock again to turn it on.';
+  const ago = sync.last ? Math.round((Date.now() - sync.last) / 60000) : null;
+  return `${ago == null ? 'Not synced yet' : ago < 1 ? 'Synced just now' : `Synced ${ago < 120 ? `${ago} min` : `${Math.round(ago / 60)} h`} ago`}${sync.err ? ` · last try failed (${sync.err}), retries on the next change` : ''}`;
 }
 
 // ---------- targets & program ----------
@@ -348,6 +436,8 @@ const I = {
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
   back: '<path d="m15 5-7 7 7 7"/>',
   fwd: '<path d="m9 5 7 7-7 7"/>',
+  camera: '<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/>',
+  share: '<path d="M12 3v12M8 7l4-4 4 4M5 11v9h14v-9"/>',
 };
 const icon = (k, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${I[k]}</svg>`;
 
@@ -365,7 +455,7 @@ function route() {
 const GATE_HASH = 'd74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1';
 const GATE_KEY = 'gym-unlocked';
 let unlocked = false;
-try { unlocked = localStorage.getItem(GATE_KEY) === GATE_HASH; } catch (e) { /* storage blocked */ }
+try { unlocked = localStorage.getItem(GATE_KEY) === GATE_HASH && (!API || !!localStorage.getItem('gym-sync')); } catch (e) { /* storage blocked */ }
 async function sha256(text) {
   const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
   return [...new Uint8Array(bytes)].map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -373,6 +463,7 @@ async function sha256(text) {
 function vGate() {
   return `<form class="card form gate" data-form="gate" autocomplete="off">
     <h3>Private</h3>
+    ${API && ls(GATE_KEY) === GATE_HASH ? '<p class="small muted">Enter the password once more to turn on cloud sync.</p>' : ''}
     <label>Password <input class="inp" name="pw" type="password" autocapitalize="none" autocomplete="current-password" required></label>
     <button class="btn primary">Unlock</button>
     <p class="small muted" id="gate-msg" role="status"></p>
@@ -418,7 +509,7 @@ function vToday() {
   const h = S.habits[t] || {};
   const lastSleep = [...S.sleep].sort((a, b) => a.wake.localeCompare(b.wake)).at(-1);
   const bw = S.body.find((b) => b.date === t);
-  return `
+  return `${installHint()}
   <p class="phase"><b>Week ${w}</b> · ${esc(ph.name)} · ${ph.sets} sets, ${ph.rir} reps in reserve <a href="#plan">plan ${icon('fwd')}</a></p>
   <section class="card">${train}</section>
 
@@ -450,6 +541,14 @@ function vToday() {
     <form class="inline" data-form="weight"><input class="inp" name="w" type="number" inputmode="decimal" step="0.05" placeholder="kg" value="${bw?.w ?? ''}" aria-label="Weight in kg"><button class="btn">Save</button></form>
     <p class="muted small">After the toilet, before food or water. The 7-day average is what counts, not today's number.</p>
   </section>`;
+}
+function installHint() {
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+  if (!ios || standalone || ls('gym-install-hint')) return '';
+  return `<section class="card install"><h3>Put this on your home screen</h3>
+    <p class="small">In Safari tap ${icon('share')} <b>Share</b>, then <b>Add to Home Screen</b>. It opens full screen like an app, works offline, and can ping you when rest ends.${API ? ' Your log follows you there through the cloud copy.' : ''}</p>
+    <button class="btn sm" data-act="hideInstall">Got it</button></section>`;
 }
 function meter(label, val, target, unit, main) {
   const pct = Math.min(100, (val / target) * 100); const left = Math.round(target - val);
@@ -564,6 +663,7 @@ function vFoodLog() {
   return `
   <div class="datenav"><button class="icon-btn" data-act="foodDay" data-d="-1" aria-label="Previous day">${icon('back')}</button><b>${d === today() ? 'Today' : fmtDay(d)}</b><button class="icon-btn" data-act="foodDay" data-d="1" aria-label="Next day" ${d >= today() ? 'disabled' : ''}>${icon('fwd')}</button></div>
   <section class="card">${meter('Protein', pr, tg.protein, 'g', true)}${meter('Calories', kc, tg.kcal, 'kcal', false)}</section>
+  ${mealBoxHtml()}
   ${MEALS.map((m) => {
     const items = log.map((f, idx) => ({ ...f, idx })).filter((f) => f.meal === m);
     const planned = (planOf()[m] || []).length;
@@ -576,6 +676,85 @@ function vFoodLog() {
   }).join('')}
   <div class="row-btns"><button class="btn" data-act="logPlanDay">Log the whole day plan</button><button class="btn ghost" data-act="copyYesterday">Copy yesterday</button></div>`;
 }
+// ----- typed / photographed meals -----
+let foodIdx = null; let foodIdxN = -1;
+function mealIndex() { if (!foodIdx || foodIdxN !== S.custom.length) { foodIdx = buildIndex(allFoods(), ALIASES); foodIdxN = S.custom.length; } return foodIdx; }
+function guessMeal() {
+  const lw = lastWorkout();
+  if (lw?.date === today() && lw.startedAt) { const end = Date.parse(lw.startedAt) + (lw.mins || 60) * 60000; if (Date.now() - end < 90 * 60000 && Date.now() > end - 30 * 60000) return 'Post-workout'; }
+  const h = new Date().getHours() + new Date().getMinutes() / 60;
+  return h < 11 ? 'Breakfast' : h < 16 ? 'Lunch' : h < 19.5 ? 'Snack' : 'Dinner';
+}
+// Rows ready to log: typed rows (with AI estimates filled in) plus photo rows.
+function mealRows() {
+  const rows = ui.mrows.map((r, k) => {
+    const ai = r.src === 'unknown' ? ui.mai[r.raw] : null;
+    return { ...(ai ? { ...r, name: ai.name || r.name, serving: ai.qty || 'estimate', kcal: ai.kcal, p: ai.p, qty: 1, src: 'ai' } : r), key: `t${k}` };
+  });
+  for (const [k, it] of (ui.mphoto?.items || []).entries()) rows.push({ raw: `photo: ${it.name}`, name: it.name, serving: it.qty || 'from photo', kcal: it.kcal, p: it.p, qty: 1, src: 'photo', key: `p${k}`, fid: null });
+  return rows.map((r) => ({ ...r, skip: ui.mskip.has(r.key) }));
+}
+function mealPreviewHtml() {
+  const rows = mealRows(); if (!rows.length && !ui.mbusy) return '';
+  const ok = rows.filter((r) => !r.skip && r.src !== 'unknown');
+  const unknown = rows.filter((r) => !r.skip && r.src === 'unknown');
+  const tag = { db: '', given: 'your numbers', ai: 'estimate', photo: 'photo' };
+  return `${ui.mphoto?.thumb ? `<div class="mphoto"><img src="${ui.mphoto.thumb}" alt="Meal photo"><span class="small muted">${esc(ui.mphoto.note || '')}</span><button type="button" class="icon-btn" data-act="mPhotoClear" aria-label="Remove photo">${icon('x')}</button></div>` : ''}
+    <ul class="mprev">${rows.map((r) => `<li class="${r.skip ? 'skip' : ''} ${r.src === 'unknown' ? 'unk' : ''}">
+      <div><div>${esc(r.name)}${tag[r.src] ? ` <span class="tag">${tag[r.src]}</span>` : ''}</div>
+      <div class="small muted">${r.src === 'unknown' ? `not in the food list${API ? '' : ', add numbers like “' + esc(r.phrase || r.raw) + ' 250 kcal 10p”'}` : `${r.src === 'db' ? `${r.qty} × ${esc(r.serving)}` : esc(r.serving)} · ${Math.round(r.kcal * r.qty)} kcal · <b>${+(r.p * r.qty).toFixed(1)} g P</b>`}</div></div>
+      <button type="button" class="icon-btn" data-act="mSkip" data-k="${r.key}" aria-label="${r.skip ? 'Keep' : 'Leave out'} ${esc(r.name)}">${r.skip ? '+' : icon('x')}</button></li>`).join('')}</ul>
+    ${ui.mbusy ? `<p class="small muted">${esc(ui.mbusy)}</p>` : ''}
+    ${unknown.length && API && !ui.mbusy ? `<button type="button" class="btn sm" data-act="mEstimate">Estimate ${unknown.length} unknown item${unknown.length > 1 ? 's' : ''}</button>` : ''}
+    ${ok.length ? `<p class="small">Total <b>${Math.round(sum(ok.map((r) => r.kcal * r.qty)))} kcal · ${Math.round(sum(ok.map((r) => r.p * r.qty)))} g protein</b></p>` : ''}`;
+}
+function mealBoxHtml() {
+  const meal = ui.mmeal || guessMeal();
+  const n = mealRows().filter((r) => !r.skip && r.src !== 'unknown').length;
+  return `<section class="card mealbox"><form class="form" data-form="meal" autocomplete="off">
+    <label for="mtext"><b>What did you eat?</b> <span class="small muted">plain English, quantities optional</span></label>
+    <textarea id="mtext" class="inp" name="text" rows="2" placeholder="2 roti, 1 katori dal, rice, 2 eggs, whey with milk">${esc(ui.mtext)}</textarea>
+    <div class="mrow">
+      <select class="inp sm" name="meal" data-mmeal aria-label="Meal">${MEALS.map((m) => `<option ${m === meal ? 'selected' : ''}>${m}</option>`).join('')}</select>
+      ${API ? `<label class="btn ghost sm">${icon('camera')} Photo<input type="file" accept="image/*" id="mphoto" hidden></label>` : ''}
+      <button class="btn primary sm" id="madd" ${n ? '' : 'disabled'}>Add${n ? ` ${n}` : ''}</button>
+    </div>
+    <div id="mprev">${mealPreviewHtml()}</div>
+  </form></section>`;
+}
+function refreshMealBox() {
+  const pv = $('#mprev'); if (pv) pv.innerHTML = mealPreviewHtml();
+  const b = $('#madd'); if (b) { const n = mealRows().filter((r) => !r.skip && r.src !== 'unknown').length; b.disabled = !n; b.textContent = `Add${n ? ` ${n}` : ''}`; }
+}
+let mealT;
+function onMealInput(v) {
+  ui.mtext = v; clearTimeout(mealT);
+  mealT = setTimeout(() => { ui.mrows = parseMeal(ui.mtext, mealIndex()); ui.mskip = new Set([...ui.mskip].filter((k) => k.startsWith('p'))); refreshMealBox(); }, 150);
+}
+async function shrinkImage(file, max = 1024) {
+  const src = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+    const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    const t = document.createElement('canvas'); const tk = 160 / Math.max(c.width, c.height); t.width = Math.round(c.width * tk); t.height = Math.round(c.height * tk);
+    t.getContext('2d').drawImage(c, 0, 0, t.width, t.height);
+    return { full: c.toDataURL('image/jpeg', 0.8), thumb: t.toDataURL('image/jpeg', 0.7) };
+  } finally { URL.revokeObjectURL(src); }
+}
+async function mealPhoto(file) {
+  if (!canSync()) { toast('Photos need the cloud server'); return; }
+  ui.mbusy = 'Looking at the photo…'; refreshMealBox();
+  try {
+    const { full, thumb } = await shrinkImage(file);
+    const r = await api('/photo', { image: full, hint: ui.mtext, meal: $('[data-mmeal]')?.value || '' });
+    ui.mphoto = { id: r.id, items: r.items || [], note: r.note, thumb };
+    if (!ui.mphoto.items.length) toast('Could not make out the food. Type it instead.');
+  } catch (e) { toast(`Photo failed: ${e.message}`); }
+  ui.mbusy = false; refreshMealBox();
+}
+
 function vFoodPlan() {
   const plan = planOf(); const t = planTotals(plan); const tg = targets();
   const gap = tg.protein - t.p;
@@ -765,9 +944,15 @@ function vSettings() {
     <label class="radio"><input type="checkbox" name="notify" ${st.notify ? 'checked' : ''}> Notification when rest ends while the app is in the background <span class="muted">(${notifState}; Android, or iPhone with the app on the home screen)</span></label>
     <button class="btn primary">Save</button>
   </form>
+  ${!API ? '' : `<section class="card">
+    <h3>Cloud copy</h3>
+    <p class="small" id="syncState">${esc(syncText())}</p>
+    <p class="small muted">Everything you log is copied to your own server a few seconds after each change, so Claude can read it and a new install picks it up. Entries Claude adds show up here on the next open.</p>
+    ${canSync() ? '<button class="btn sm" data-act="syncNow">Sync now</button>' : ''}
+  </section>`}
   <section class="card">
     <h3>Backup</h3>
-    <p class="small muted">Data lives only in this browser. Export after big changes; import on a new phone.</p>
+    <p class="small muted">${API ? 'A file copy, in case.' : 'Data lives only in this browser.'} Export after big changes; import on a new phone.</p>
     <div class="row-btns"><button class="btn" data-act="export">Export backup</button><button class="btn" data-act="importPick">Import backup</button></div>
     <button class="btn ghost danger sm" data-act="reset">Erase everything</button>
   </section>
@@ -897,6 +1082,18 @@ const act = {
   },
   delSleep(el) { S.sleep = S.sleep.filter((s) => s.id !== el.dataset.id); save(); render(); },
 
+  mSkip(el) { const k = el.dataset.k; if (ui.mskip.has(k)) ui.mskip.delete(k); else ui.mskip.add(k); refreshMealBox(); },
+  mPhotoClear() { ui.mphoto = null; ui.mskip = new Set([...ui.mskip].filter((k) => k.startsWith('t'))); refreshMealBox(); },
+  async mEstimate() {
+    const lines = mealRows().filter((r) => r.src === 'unknown' && !r.skip).map((r) => r.raw);
+    if (!lines.length || !canSync()) return;
+    ui.mbusy = 'Estimating…'; refreshMealBox();
+    try { const r = await api('/estimate', { items: lines }); for (const it of r.items || []) ui.mai[it.text] = it; }
+    catch (e) { toast(`Estimate failed: ${e.message}`); }
+    ui.mbusy = false; refreshMealBox();
+  },
+  hideInstall() { ls('gym-install-hint', '1'); render(); },
+  syncNow() { if (canSync()) { sync.dirty = true; pushSync(); toast('Syncing…'); } },
   foodDay(el) { const d = addDays(ui.foodDate, +el.dataset.d); if (d <= today()) { ui.foodDate = d; render(); } },
   addFood(el) { ui.addMeal = el.dataset.m; ui.addMode = el.dataset.mode; ui.query = ''; modal(addFoodHtml()); $('#fq')?.focus(); },
   pickFood(el) {
@@ -943,7 +1140,7 @@ const act = {
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   },
   importPick() { $('#importFile').click(); },
-  reset() { if (confirm('Erase all workouts, food, sleep and settings on this device?') && confirm('Really? This cannot be undone.')) { localStorage.removeItem(KEY); S = defaults(); render(); } },
+  reset() { if (confirm('Erase all workouts, food, sleep and settings on this device?') && confirm('Really? This cannot be undone.')) { localStorage.removeItem(KEY); S = defaults(); save(); render(); } },
 };
 
 function logPlan(meals) {
@@ -972,10 +1169,32 @@ const forms = {
   async gate(fd) {
     const msg = $('#gate-msg');
     if (!window.crypto?.subtle) { msg.textContent = 'This page needs a secure (https) connection.'; return; }
-    if (await sha256(String(fd.get('pw')).trim().toLowerCase()) === GATE_HASH) {
-      try { localStorage.setItem(GATE_KEY, GATE_HASH); } catch (e) { /* stays unlocked for this visit only */ }
+    const pw = String(fd.get('pw')).trim().toLowerCase();
+    if (await sha256(pw) === GATE_HASH) {
+      try { localStorage.setItem(GATE_KEY, GATE_HASH); localStorage.setItem(SYNC_KEY, await sha256(`gym-sync|${pw}`)); } catch (e) { /* stays unlocked for this visit only */ }
       unlocked = true; render();
+      if (fresh) restoreIfFresh(); else scheduleSync(500);
     } else { msg.textContent = 'Wrong password.'; $('input[name=pw]')?.select(); }
+  },
+  meal(fd) {
+    clearTimeout(mealT); ui.mtext = String(fd.get('text') || ''); ui.mrows = parseMeal(ui.mtext, mealIndex());
+    const meal = fd.get('meal') || guessMeal(); const at = new Date().toISOString();
+    const rows = mealRows().filter((r) => !r.skip && r.src !== 'unknown');
+    const left = mealRows().filter((r) => !r.skip && r.src === 'unknown');
+    if (!rows.length) { toast(left.length ? 'Nothing recognised yet. Add numbers, or tap Estimate.' : 'Type what you ate'); return; }
+    const log = (S.food[ui.foodDate] ||= []);
+    for (const r of rows) {
+      log.push({ fid: r.fid || null, name: r.name, serving: r.serving, kcal: r.kcal, p: r.p, qty: r.qty, meal, src: r.src, text: r.raw, at, ...(r.src === 'photo' ? { photo: ui.mphoto?.id } : {}) });
+      // a food typed with its own numbers is remembered, so next time the name alone works
+      const words = String(r.phrase || '').trim();
+      if (r.src === 'given' && !r.fid && words && words.split(' ').length <= 4 && !r.noKcal && !allFoods().some((f) => f.name.toLowerCase() === words)) {
+        const n = r.n && r.n > 0 ? r.n : 1;
+        S.custom.push({ id: `c_${uid()}`, name: words.charAt(0).toUpperCase() + words.slice(1), serving: r.unit ? `1 ${r.unit}` : '1 serving', kcal: Math.round(r.kcal / n), p: Math.round((r.p / n) * 10) / 10, diet: 'v', cat: 'Custom', buy: null });
+      }
+    }
+    ui.mtext = ''; ui.mrows = []; ui.mskip = new Set(); ui.mai = {}; ui.mphoto = null; ui.mmeal = null;
+    save(); render();
+    toast(`Added ${rows.length} item${rows.length > 1 ? 's' : ''} to ${meal}${left.length ? `, skipped ${left.length} unknown` : ''}`);
   },
   weight(fd) { const w = num(fd.get('w')); if (!w) return; upsertBody(today(), { w }); save(); toast(`Saved ${w} kg`); render(); },
   measure(fd) { const waist = num(fd.get('waist')), neck = num(fd.get('neck')); if (!waist || !neck) { toast('Enter waist and neck'); return; } upsertBody(today(), { waist, neck }); save(); render(); },
@@ -1029,6 +1248,11 @@ document.addEventListener('input', (e) => {
     if (t.dataset.w) s.w = t.value; else s.r = t.value;
     save();
   } else if (t.id === 'fq') { ui.query = t.value; $('#flist').innerHTML = foodListHtml(); }
+  else if (t.id === 'mtext') onMealInput(t.value);
+});
+document.addEventListener('keydown', (e) => {
+  // Enter adds the meal (Shift+Enter for a new line) on keyboards that have it
+  if (e.target.id === 'mtext' && e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); e.target.form.requestSubmit(); }
 });
 document.addEventListener('change', (e) => {
   const t = e.target; const d = today();
@@ -1037,6 +1261,8 @@ document.addEventListener('change', (e) => {
   else if (t.dataset.gro) { const wk = weekStart(d); (S.grocery[wk] ||= {})[t.dataset.gro] = t.checked; save(); }
   else if ('prepdays' in t.dataset) { S.prepDays = +t.value; save(); render(); }
   else if ('liftex' in t.dataset) { ui.liftEx = t.value; render(); }
+  else if ('mmeal' in t.dataset) ui.mmeal = t.value;
+  else if (t.id === 'mphoto' && t.files[0]) { mealPhoto(t.files[0]); t.value = ''; }
   else if (t.id === 'importFile' && t.files[0]) {
     t.files[0].text().then((txt) => {
       const o = JSON.parse(txt);
@@ -1070,4 +1296,7 @@ window.addEventListener('hashchange', render);
 render();
 if (S.active?.rest) runTimer();
 if (unlocked && S.active && !S.active.past) { keepAwake(true); runTimer(); }
+if (canSync()) { if (fresh) restoreIfFresh(); else scheduleSync(1000); }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushSync(); else if (canSync()) scheduleSync(800); });
+window.addEventListener('pagehide', flushSync);
 if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});

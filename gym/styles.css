@@ -294,3 +294,18 @@ dialog::backdrop { background: rgb(0 0 0 / 0.45); }
   .shead, .set { grid-template-columns: 26px minmax(0, 1fr) 56px 44px; gap: 6px; }
   .tick { width: 44px; }
 }
+
+/* typed / photographed meals */
+.mealbox textarea { resize: vertical; min-height: 64px; font: inherit; line-height: 1.4; }
+.mealbox .mrow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.mealbox .mrow select { flex: 1 1 120px; width: auto; }
+.mealbox .mrow .btn { display: inline-flex; align-items: center; gap: 6px; }
+.mealbox .mrow .btn .ic { width: 18px; height: 18px; }
+.mprev { list-style: none; margin: 6px 0 0; padding: 0; }
+.mprev li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--rule); }
+.mprev li.skip > div { opacity: 0.45; text-decoration: line-through; }
+.mprev li.unk > div > div:first-child { color: var(--bad); }
+.mphoto { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.mphoto img { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; flex: none; }
+.mphoto span { flex: 1; }
+.install .ic { width: 16px; height: 16px; vertical-align: -3px; }

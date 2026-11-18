@@ -1,7 +1,7 @@
 // Offline support: network first (3 s), then the cached copy.
 // Bump VERSION on every deploy so phones pick up the new files.
-const VERSION = 'gym-v3';
-const SHELL = ['./', 'index.html', 'styles.css', 'app.js', 'data.js', 'plan.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
+const VERSION = 'gym-v4';
+const SHELL = ['./', 'index.html', 'styles.css', 'app.js', 'data.js', 'plan.js', 'meals.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
