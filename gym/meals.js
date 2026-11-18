@@ -14,6 +14,8 @@ const UNIT_WORDS = {
 const UNIT = Object.fromEntries(Object.entries(UNIT_WORDS).flatMap(([u, ws]) => ws.map((w) => [w, u])));
 const SIZE = { small: 0.75, little: 0.5, medium: 1, regular: 1, full: 1, large: 1.5, big: 1.5, double: 2 };
 const STOP = new Set(['water', 'without', 'no', 'less', 'of', 'some', 'bit', 'the', 'my', 'i', 'ate', 'had', 'have', 'for', 'in', 'at', 'on', 'home', 'homemade', 'made', 'cooked', 'freshly', 'fresh', 'around', 'about', 'approx', 'approximately', 'x', 'more', 'extra', 'also', 'then', 'today', 'just', 'only', 'like', 'nearly', 'almost', 'total']);
+// Words that only describe a food. Leftovers other than these become an unknown item instead of being dropped.
+const DESCRIBE = new Set(['masala', 'fry', 'fried', 'tadka', 'tarka', 'curry', 'gravy', 'dry', 'spicy', 'hot', 'cold', 'plain', 'sweet', 'salted', 'roasted', 'boiled', 'grilled', 'steamed', 'baked', 'green', 'red', 'yellow', 'white', 'brown', 'homemade', 'garlic', 'jeera', 'lemon', 'special', 'mix', 'mixed', 'desi', 'ghar', 'style', 'maharashtrian', 'punjabi', 'south', 'indian', 'chinese', 'schezwan', 'kadai', 'kadhai', 'rava', 'rawa', 'sooji', 'suji', 'wheat', 'atta', 'multigrain', 'ragi', 'jowar', 'bajra', 'tawa', 'stuffed', 'healthy', 'light', 'low', 'fat', 'sugar', 'sugarfree', 'free', 'diet', 'chilli', 'chili', 'pepper', 'ginger', 'tandoori', 'tikka', 'malai', 'makhani', 'shahi', 'restaurant', 'hotel', 'canteen', 'office', 'mess', 'tiffin', 'leftover', 'piece', 'chutney', 'pickle', 'achar', 'papad', 'sauce', 'ketchup', 'mayo', 'dip']);
 const VOL_UNITS = new Set(['katori', 'bowl', 'cup', 'plate']);
 const UNIT_G = { katori: 150, bowl: 200, cup: 150, plate: 300, tbsp: 15, tsp: 5, handful: 30 };
 const UNIT_ML = { cup: 150, katori: 150, bowl: 200, glass: 250 };
@@ -79,7 +81,8 @@ function multiplier(f, n, unit, size) {
       break;
     case 'serving': case 'pack': case 'scoop': m = n; break;
     default: // pieces, slices or a bare number
-      m = hasNum && info.count ? n / info.count : n;
+      if (hasNum && !unit && n > 20) m = info.g && !info.count ? n / info.g : 1; // "paneer 150" means grams; "chicken 65" is a dish name
+      else m = hasNum && info.count ? n / info.count : n;
   }
   m *= sz;
   return Math.max(0.05, Math.round(m * 100) / 100);
@@ -186,6 +189,10 @@ export function parseMeal(text, idx) {
         const rest = pc.name.filter((w) => !m.toks.some((t) => same(w, t)));
         const m2 = rest.length ? matchFood(rest, idx) : null;
         if (m2 && m2.f.id !== f.id) rows.push({ raw: rest.join(' '), phrase: rest.join(' '), name: m2.f.name, fid: m2.f.id, serving: m2.f.serving, kcal: m2.f.kcal, p: m2.f.p, qty: 1, src: 'db' });
+        else if (!m2) {
+          const odd = rest.filter((w) => !DESCRIBE.has(w) && !/^\d/.test(w) && w.length > 2);
+          if (odd.length) rows.push({ raw: odd.join(' '), phrase: odd.join(' '), name: cap(odd.join(' ')), fid: null, src: 'unknown' });
+        }
       }
     });
   }

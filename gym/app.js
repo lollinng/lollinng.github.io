@@ -3,7 +3,7 @@ import { planView } from './plan.js';
 import { parseMeal, buildIndex } from './meals.js';
 
 // Backend (Cloudflare Worker, ~/personal/gym/worker). Empty = run fully offline with no sync, AI or photos.
-const API = '';
+const API = 'https://gym-api.pratameshjadhav.workers.dev';
 
 // ---------- small utils ----------
 const $ = (s, el = document) => el.querySelector(s);
@@ -693,7 +693,8 @@ function guessMeal() {
 }
 // Rows ready to log: typed rows (with AI estimates filled in) plus photo rows.
 function mealRows() {
-  const rows = ui.mrows.map((r, k) => {
+  // With a photo, the typed text was sent as its hint, so the photo's list replaces the typed rows (no double count).
+  const rows = ui.mphoto ? [] : ui.mrows.map((r, k) => {
     const ai = r.src === 'unknown' ? ui.mai[r.raw] : null;
     return { ...(ai ? { ...r, name: ai.name || r.name, serving: ai.qty || 'estimate', kcal: ai.kcal, p: ai.p, qty: 1, src: 'ai' } : r), key: `t${k}` };
   });
@@ -705,7 +706,7 @@ function mealPreviewHtml() {
   const ok = rows.filter((r) => !r.skip && r.src !== 'unknown');
   const unknown = rows.filter((r) => !r.skip && r.src === 'unknown');
   const tag = { db: '', given: 'your numbers', ai: 'estimate', photo: 'photo' };
-  return `${ui.mphoto?.thumb ? `<div class="mphoto"><img src="${ui.mphoto.thumb}" alt="Meal photo"><span class="small muted">${esc(ui.mphoto.note || '')}</span><button type="button" class="icon-btn" data-act="mPhotoClear" aria-label="Remove photo">${icon('x')}</button></div>` : ''}
+  return `${ui.mphoto?.thumb ? `<div class="mphoto"><img src="${ui.mphoto.thumb}" alt="Meal photo"><span class="small muted">${esc(ui.mphoto.note || '')}${ui.mtext.trim() ? ' Your typed text was used as a hint, so only the photo’s list is added.' : ''}</span><button type="button" class="icon-btn" data-act="mPhotoClear" aria-label="Remove photo">${icon('x')}</button></div>` : ''}
     <ul class="mprev">${rows.map((r) => `<li class="${r.skip ? 'skip' : ''} ${r.src === 'unknown' ? 'unk' : ''}">
       <div><div>${esc(r.name)}${tag[r.src] ? ` <span class="tag">${tag[r.src]}</span>` : ''}</div>
       <div class="small muted">${r.src === 'unknown' ? `not in the food list${API ? '' : ', add numbers like “' + esc(r.phrase || r.raw) + ' 250 kcal 10p”'}` : `${r.src === 'db' ? `${r.qty} × ${esc(r.serving)}` : esc(r.serving)} · ${Math.round(r.kcal * r.qty)} kcal · <b>${+(r.p * r.qty).toFixed(1)} g P</b>`}</div></div>
