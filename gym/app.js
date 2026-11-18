@@ -126,6 +126,7 @@ function applyInbox(items) {
     else if (it.kind === 'food' && it.date && d?.name) { (S.food[it.date] ||= []).push({ ...d, inbox: it.id }); n++; }
     else if (it.kind === 'body' && d?.date) { upsertBody(d.date, d); n++; }
     else if (it.kind === 'sleep' && d?.bed && d?.wake) { S.sleep.push({ id: it.id, q: null, ...d }); n++; }
+    else if (it.kind === 'habit' && it.date && d) { Object.assign((S.habits[it.date] ||= {}), d); n++; }
     else if (it.kind === 'profile' && d) { Object.assign(S.profile, d); n++; }
     S.applied.push(it.id); changed = true;
   }

@@ -1,6 +1,6 @@
 // Offline support: network first (3 s), then the cached copy.
 // Bump VERSION on every deploy so phones pick up the new files.
-const VERSION = 'gym-v6';
+const VERSION = 'gym-v7';
 const SHELL = ['./', 'index.html', 'styles.css', 'app.js', 'data.js', 'plan.js', 'meals.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
