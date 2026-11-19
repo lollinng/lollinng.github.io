@@ -195,8 +195,8 @@ function schedOf(w = weekNo()) { return phaseOf(w).sched === 'ramp' ? SCHEDULES.
 function sortedWorkouts() { return [...S.workouts].sort(byDate); }
 function lastWorkout() { return sortedWorkouts().at(-1); }
 function nextDay() {
-  const lw = lastWorkout();
-  return lw ? schedOf().next[lw.day] || 'push' : 'push';
+  const lw = sortedWorkouts().filter((w) => schedOf().next[w.day]).at(-1); // an extra Arms day doesn't move the rotation
+  return lw ? schedOf().next[lw.day] : 'push';
 }
 function streakToYesterday() {
   const days = new Set(S.workouts.map((w) => w.date));
@@ -576,7 +576,7 @@ function vTrain() {
     <p>${esc(ph.note)}</p>
     <p class="muted small">${ph.sets} working sets per exercise${ph.four ? ` (4 on the first ${ph.four === 1 ? 'one' : 'two'})` : ''}, last set ${ph.rir} reps short of failure. Schedule: ${esc(schedOf().label)}.</p>
     ${adv.rest ? `<p class="note">Rest day recommended today. Next up is ${DAYS[nd].name}.</p>` : ''}
-    <div class="daypick">${schedOf().days.map((d) => `<button class="btn${d === nd ? ' primary' : ''}" data-act="start" data-day="${d}">${DAYS[d].name}${d === nd ? ' · next' : ''}</button>`).join('')}</div>
+    <div class="daypick">${[...schedOf().days, 'arms'].map((d) => `<button class="btn${d === nd ? ' primary' : ''}" data-act="start" data-day="${d}">${DAYS[d].name}${d === nd ? ' · next' : ''}</button>`).join('')}</div>
     <button class="btn ghost sm" data-act="pastForm">+ Log a past session</button>
   </section>
   <h2 class="sec">History</h2>

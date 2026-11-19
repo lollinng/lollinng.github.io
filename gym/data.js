@@ -31,7 +31,8 @@ export const EXERCISES = {
   pushdown:        { name: 'Triceps rope pushdown', muscle: 'triceps', type: 'iso', reps: [10, 15], inc: 2.5, start: 15, alts: ['bar_pushdown'], cue: 'Elbows fixed at your sides, spread the rope at the bottom.' },
   bar_pushdown:    { name: 'Triceps bar pushdown', muscle: 'triceps', type: 'iso', reps: [10, 15], inc: 2.5, start: 15, alts: ['pushdown'], cue: 'Elbows fixed, full lockout.' },
   oh_triceps:      { name: 'Overhead cable triceps extension', muscle: 'triceps', type: 'iso', reps: [10, 15], inc: 2.5, start: 10, alts: ['db_oh_triceps'], cue: 'Face away from the cable, deep stretch behind the head.' },
-  db_oh_triceps:   { name: 'Overhead dumbbell triceps extension', muscle: 'triceps', type: 'iso', reps: [10, 15], inc: 2, start: 10, alts: ['oh_triceps'], cue: 'One dumbbell, both hands, elbows pointing up.' },
+  db_oh_triceps:   { name: 'Overhead dumbbell triceps extension', muscle: 'triceps', type: 'iso', reps: [10, 15], inc: 2, start: 10, alts: ['oh_triceps', 'db_oh_triceps_1arm'], cue: 'One dumbbell, both hands, elbows pointing up.' },
+  db_oh_triceps_1arm: { name: 'One-arm overhead dumbbell extension', muscle: 'triceps', type: 'iso', reps: [10, 15], inc: 1, start: 5, alts: ['db_oh_triceps', 'oh_triceps'], cue: 'Per arm. Elbow points at the ceiling, lower behind the head.' },
 
   // ---- Pull ----
   lat_pulldown:    { name: 'Lat pulldown', muscle: 'back', type: 'compound', reps: [8, 12], inc: 2.5, start: 30, alts: ['assisted_pullup', 'pullup', 'single_pulldown'], cue: 'Chest up, pull the bar to the collarbone, elbows down and back.' },
@@ -48,6 +49,7 @@ export const EXERCISES = {
   db_curl:         { name: 'Dumbbell biceps curl', muscle: 'biceps', type: 'iso', reps: [10, 12], inc: 1, start: 7.5, alts: ['cable_curl', 'ez_curl'], cue: 'Per dumbbell. Elbows still, 2 s down.' },
   cable_curl:      { name: 'Cable curl', muscle: 'biceps', type: 'iso', reps: [10, 12], inc: 2.5, start: 10, alts: ['db_curl', 'ez_curl'], cue: 'Elbows pinned, full squeeze.' },
   ez_curl:         { name: 'EZ bar curl', muscle: 'biceps', type: 'iso', reps: [8, 12], inc: 2.5, start: 15, alts: ['db_curl', 'cable_curl'], cue: 'Total bar weight. No hip swing.' },
+  machine_curl:    { name: 'Biceps curl machine', muscle: 'biceps', type: 'iso', reps: [10, 12], inc: 2.5, start: 10, alts: ['cable_curl', 'db_curl'], cue: 'Armpits tight on the pad, full stretch, 2 s down.' },
   hammer_curl:     { name: 'Hammer curl', muscle: 'biceps', type: 'iso', reps: [10, 12], inc: 1, start: 7.5, alts: ['db_curl'], cue: 'Per dumbbell, thumbs up.' },
 
   // ---- Legs ----
@@ -91,6 +93,15 @@ export const DAYS = {
       { ex: 'db_curl', from: 1 },
       { ex: 'straight_arm', from: 3 },
       { ex: 'hammer_curl', from: 3 },
+    ],
+  },
+  arms: {
+    name: 'Arms', focus: 'Biceps, triceps (extra day, outside the rotation)',
+    slots: [
+      { ex: 'pushdown', from: 1 },
+      { ex: 'db_oh_triceps_1arm', from: 1 },
+      { ex: 'machine_curl', from: 1 },
+      { ex: 'hammer_curl', from: 1 },
     ],
   },
   legs: {
@@ -188,6 +199,7 @@ export const FOODS = [
   { id: 'rajma', name: 'Rajma', serving: '1 katori (50 g dry)', kcal: 200, p: 10, diet: 'v', cat: 'Pulses', buy: [50, 'g', 'Rajma (dry)'], prep: 'Chana/rajma: soak overnight, pressure-cook a batch, fridge 3 days.' },
   { id: 'sprouts', name: 'Sprouts chaat (moong)', serving: '1 bowl (40 g dry)', kcal: 140, p: 9, diet: 'v', cat: 'Pulses', buy: [40, 'g', 'Whole moong (for sprouts)'], prep: 'Sprouts: soak whole moong 8 h, drain, keep in a cloth 1–2 days.' },
   { id: 'matki', name: 'Matki usal (with or without batata)', serving: '1 katori (40 g dry)', kcal: 200, p: 9, diet: 'v', cat: 'Pulses', buy: [40, 'g', 'Matki (moth beans)'], prep: 'Matki: soak 8 h, sprout 1 day in a cloth, cook a batch, fridge 3 days.' },
+  { id: 'sandge', name: 'Sandge curry (sandgyachi bhaji)', serving: '1 katori', kcal: 200, p: 8, diet: 'v', cat: 'Pulses', buy: null },
   { id: 'roasted_chana', name: 'Roasted chana', serving: '30 g', kcal: 110, p: 6, diet: 'v', cat: 'Snacks', buy: [30, 'g', 'Roasted chana'] },
   { id: 'peanuts', name: 'Peanuts, roasted', serving: '30 g', kcal: 170, p: 7, diet: 'v', cat: 'Snacks', buy: [30, 'g', 'Peanuts'] },
   { id: 'murmura_chiwda', name: 'Chiwda (murmura)', serving: '1 plate (30 g)', kcal: 140, p: 3, diet: 'v', cat: 'Snacks', buy: null },
@@ -234,6 +246,8 @@ export const FOODS = [
   { id: 'biryani_chicken', name: 'Chicken biryani', serving: '1 plate', kcal: 600, p: 30, diet: 'n', cat: 'Outside', buy: null },
   { id: 'pizza', name: 'Pizza', serving: '1 slice', kcal: 280, p: 12, diet: 'v', cat: 'Outside', buy: null },
   { id: 'sweet', name: 'Indian sweet', serving: '1 piece', kcal: 150, p: 2, diet: 'v', cat: 'Outside', buy: null },
+  { id: 'croissant', name: 'Croissant', serving: '1 (60 g)', kcal: 250, p: 5, diet: 'v', cat: 'Outside', buy: null },
+  { id: 'chocolate', name: 'Chocolate, small (toffee / mini bar)', serving: '1 (10 g)', kcal: 55, p: 0.7, diet: 'v', cat: 'Outside', buy: null },
   { id: 'biscuits', name: 'Biscuits', serving: '4', kcal: 120, p: 2, diet: 'v', cat: 'Outside', buy: null },
   { id: 'beer', name: 'Beer', serving: '330 ml', kcal: 150, p: 1, diet: 'v', cat: 'Outside', buy: null },
   // more home and outside food, so typed meals match something
@@ -263,6 +277,7 @@ export const FOODS = [
   { id: 'momos', name: 'Momos, veg (steamed)', serving: '6 pieces', kcal: 250, p: 8, diet: 'v', cat: 'Outside', buy: null },
   { id: 'burger', name: 'Burger', serving: '1', kcal: 400, p: 12, diet: 'v', cat: 'Outside', buy: null },
   { id: 'soft_drink', name: 'Soft drink', serving: '300 ml', kcal: 130, p: 0, diet: 'v', cat: 'Drinks', buy: null },
+  { id: 'cashews', name: 'Cashews (kaju)', serving: '10 (15 g)', kcal: 85, p: 2.7, diet: 'v', cat: 'Snacks', buy: null },
   { id: 'peanut_butter', name: 'Peanut butter', serving: '1 tbsp (16 g)', kcal: 95, p: 4, diet: 'v', cat: 'Snacks', buy: null },
   { id: 'almonds', name: 'Almonds', serving: '10 (12 g)', kcal: 70, p: 2.5, diet: 'v', cat: 'Snacks', buy: null },
   { id: 'egg_curry', name: 'Egg curry', serving: '2 eggs', kcal: 260, p: 13, diet: 'e', cat: 'Eggs', buy: null },
@@ -388,7 +403,11 @@ export const ALIASES = {
   thalipeeth: ['thalipeeth', 'thalipith'],
   bhel: ['bhel', 'bhel puri', 'sev puri', 'chaat'],
   pani_puri: ['pani puri', 'panipuri', 'golgappa', 'puchka'],
-  dabeli: ['dabeli'],
+  dabeli: ['dabeli', 'dabali', 'dabbeli', 'kutchi dabeli'],
+  sandge: ['sandge', 'sandga', 'sandage', 'sandgyachi bhaji', 'sandgyachi amti', 'vadi', 'mangodi', 'moong vadi'],
+  cashews: ['cashew', 'cashews', 'kaju'],
+  croissant: ['croissant', 'croissants', 'crossoint', 'crossaint', 'croissaint', 'crossiant'],
+  chocolate: ['chocolate', 'chocolates', 'chocklate', 'chocklates', 'choclate', 'choclates', 'toffee', 'toffees', 'eclairs', 'dairy milk'],
 };
 
 export const MEALS = ['Breakfast', 'Post-workout', 'Lunch', 'Snack', 'Dinner'];
